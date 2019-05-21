@@ -30,6 +30,18 @@ public abstract class ReportManager {
 	 * @return Returns the instance of ExtentHtmlReporter
 	 */
      protected static ExtentHtmlReporter getHtmlReporter(ConfigProvider config) {
-    	 ExtentHtmlReporter html
-     }
-
+    	 ExtentHtmlReporter htmlReporter;
+    	 String filePath = config.getResultFolder() + File.separator + config.getProduct() + "_Automation_Report_" + config.getTimeStamp() + ".html";
+    	 log.info("Html Report : " + filePath);
+    	 htmlReporter = new ExtentHtmlReporter(filePath);
+    	 
+    	 // make the charts visible on report open
+    	 htmlReporter.config().setJS("$(document).ready(function() {\r\n" +
+    	                              $(\"a[view='dashboard-view']\").click();\r\n" + });");
+    	 htmlReporter.config().setChartVisibilityOnOpen(true);
+    	 htmlReporter.config().setTheme(Theme.DARK);
+    	 htmlReporter.config().setDocumentTitle(config.getProduct() + "Report");
+    	 htmlReporter.config().setReportName(config.getProduct() + " AUtomation Execution Report");
+    	 return htmlReporter;
+      }
+ }
