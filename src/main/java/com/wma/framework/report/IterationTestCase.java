@@ -27,7 +27,7 @@ public class IterationTestCase {
 	public String getTestCaseTitle() {
 		return testCaseTitle;
 	}
-	public void setTestCasetitle(String testCaseTitle) {
+	public void setTestCaseTitle(String testCaseTitle) {
 		this.testCaseTitle = testCaseTitle;
 		this.testClassName = getTestClassName(testCaseTitle);
 	}
