@@ -23,15 +23,13 @@ import com.aventstack.extentreports.Status;
 
 /**
  * <p>This class will be responsible for generating report in Extent along with TestRail.</p>
- * <p>To use it, create an object of the class and use it as ExtentTest was used 
- * <p>To use it in existing code, follow below steps :- </p>
- * <ol><li>Replace the class <code>ExtentTest</code> with <code>TestRailAndExtentReporter</code></li>
- *      <li>Replace the initialization of <code>ExtentTest</code> object with the initialization of <code>TestRailAndExtentReporter</code> object</li>
- *     <li>Remove the object of <code>ExtentReports</code></li>
- *      <li>Use the method <code>getTestRailComments</code> at the place where TestRail comments are being update</li> 
- * </ol>
+ * <p>Usage example:-</p>
+ * <code><ul>
+ * <li>TestRailAndExtentReporter logger = TestRailAndExtentReporter.getInstance(config, testCaseTitle, testDescription);</li>
+ * <li>logger.log(Status.PASS, "Step description");</li>
+ * <li>logger.log(Status.INFO, "step description");</li>
+ * </ul></code>
  *
- * @since 23-Aug-2017
  */
 public class TestRailAndExtentReporter extends ReportManager {
 	private static Logger log = Logger.getLogger(TestRailAndExtentReporter.class);
