@@ -259,7 +259,28 @@ public class ConfigProvider {
 	public String getSytemUserName() {
 		return sytemUserName;
 	}
-
-
+	
+	public String getResultTestDataFilePath() {
+		String testDataFile = testDataFile.split(Pattern.quote("."))[0];
+		return getResultFolder() + fileSeparator + testDataFile + "_" + getTimeStamp() + ".xlsx";
+	}
+	
+	public String getTestDataFilePath() {
+		return System.getProperty("user.dir") + fileSeparator + "Resources" + fileSeparator + "TestData" + fileSeparator + testDataFile;
+	}
+	
+	public String getComputerName() {
+		Map<String, String> env = System.getenv();
+		if(env.containsKey("COMPUTERNAME"))
+			return env.get("COMPUTERNAME");
+		else if(env.containsKey("HOSTNAME"))
+			return env.get("HOSTNAME");
+		else
+			return "Unknown Computer";
+	}
+	
+	public String getUserFirstAndLastName() {
+		return Secur32Util.getUserNameEx(Secur32.EXTENDED_NAME_FORMAT.NameDisplay);
+	}
 
 }
