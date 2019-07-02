@@ -8,12 +8,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import com.sun.jna.platform.win32.Secur32;
+import com.sun.jna.platform.win32.Secur32Util;
 import com.wma.framework.util.ExcelUtilities;
 
 public class ConfigProvider {
@@ -216,7 +219,7 @@ public class ConfigProvider {
 		return executionStartedAt;
 	}
 
-	public static String getFrameworkFolderPath() {
+	public String getFrameworkFolderPath() {
 		return frameworkFolderPath;
 	}
 
@@ -261,8 +264,8 @@ public class ConfigProvider {
 	}
 	
 	public String getResultTestDataFilePath() {
-		String testDataFile = testDataFile.split(Pattern.quote("."))[0];
-		return getResultFolder() + fileSeparator + testDataFile + "_" + getTimeStamp() + ".xlsx";
+		String file = testDataFile.split(Pattern.quote("."))[0];
+		return getResultFolder() + fileSeparator + file + "_" + getTimeStamp() + ".xlsx";
 	}
 	
 	public String getTestDataFilePath() {
@@ -281,6 +284,11 @@ public class ConfigProvider {
 	
 	public String getUserFirstAndLastName() {
 		return Secur32Util.getUserNameEx(Secur32.EXTENDED_NAME_FORMAT.NameDisplay);
+	}
+
+	public void runWindowsCommand(String commandForTunnel) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

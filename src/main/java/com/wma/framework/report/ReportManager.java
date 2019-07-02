@@ -1,9 +1,12 @@
 package com.wma.framework.report;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.reporter.configuration.Theme;
 import com.wma.framework.common.*;
 
 /**
@@ -13,7 +16,6 @@ import com.wma.framework.common.*;
 */
 public abstract class ReportManager {
 	private static Logger log = Logger.getLogger(ReportManager.class);
-	private static ExtentReports tsmReports;
 	private static ExtentReports tsmReport;
 	
 	protected static ExtentReports getExtent(ConfigProvider config) {
@@ -37,11 +39,13 @@ public abstract class ReportManager {
     	 
     	 // make the charts visible on report open
     	 htmlReporter.config().setJS("$(document).ready(function() {\r\n" +
-    	                              $(\"a[view='dashboard-view']\").click();\r\n" + });");
+    	                             	" $(\"a[view='dashboard-view']\").click();\r\n" + 
+    			 						"});");
     	 htmlReporter.config().setChartVisibilityOnOpen(true);
     	 htmlReporter.config().setTheme(Theme.DARK);
     	 htmlReporter.config().setDocumentTitle(config.getProduct() + "Report");
     	 htmlReporter.config().setReportName(config.getProduct() + " AUtomation Execution Report");
     	 return htmlReporter;
       }
+     
  }

@@ -1,5 +1,6 @@
 package com.wma.framework.util;
 
+import java.net.URI;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import com.wma.framework.common.ConfigProvider;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
+import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
@@ -30,7 +32,6 @@ import microsoft.exchange.webservices.data.property.complex.ItemId;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.search.FindFoldersResults;
 import microsoft.exchange.webservices.data.search.FindItemsResults;
-import microsoft.exchange.webservices.data.search.FindFoldersResults;
 import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
@@ -42,8 +43,6 @@ import microsoft.exchange.webservices.data.search.filter.SearchFilter;
  *
  */
 public class OutlookUtility {
-	private static final String dsds = null;
-
 	private static Logger log = Logger.getLogger(OutlookUtility.class);
 
 	private String folder;
@@ -60,7 +59,7 @@ public class OutlookUtility {
 	public OutlookUtility(String userName, String password) {
 		try {
 			service = new ExchangeService(ExchangeVersion.Exchange2010_SP1);
-			service.setUr1(new URI(webmailURI));
+			service.setUrl(new URI(webmailURI));
 
 			ExchangeCredentials credentials = new WebCredentials(userName, password, "aqr.com");
 			service.setCredentials(credentials);
@@ -70,10 +69,8 @@ public class OutlookUtility {
 	}
 
 	/**
-	 * Set hte folder from which you need to read emails
-	 * 
-	 * @param folderPath
-	 *            Foldr path should be like <b>Inbox\foldeer\folder1_1</b>
+	 * Set hte folder from which you need to read emails 
+	 * @param folderPath Folder path should be like <b>Inbox\foldeer\folder1_1</b>
 	 */
 	public void setFolder(String folderName) {
 		this.folder = folderName;
@@ -87,14 +84,14 @@ public class OutlookUtility {
 	 * @throws Exception
 	 */
 	private FolderId getFolderId() throws Exception {
-		FolderId folderid = new FolderId(WellknownFolderName.Inbox);
+		FolderId folderid = new FolderId(WellKnownFolderName.Inbox);
 
 		FolderView fview = new FolderView(1);
 		fview.setPropertySet(new PropertySet(FolderSchema.DisplayName, FolderSchema.Id));
 
-		Folder msgf = folder.bind(service, WellknownFolderName.Inbox);
-		FindFoldersResults res = msgF.findFolders(new Search.ContainsSubstring(FolderSchema.DisplayName, folder),
-				fview);
+		Folder msgf = Folder.bind(service, WellKnownFolderName.Inbox);
+		FindFoldersResults res = msgf
+				.findFolders(new SearchFilter.ContainsSubstring(FolderSchema.DisplayName, folder), fview);
 		List<Folder> f1 = res.getFolders();
 		Folder fdApps = f1.get(0);
 		folderid = fdApps.getId();
@@ -102,7 +99,7 @@ public class OutlookUtility {
 		return folderid;
 	}
 
-	private Document getEmailContent(String, String sender) {
+	private Document getEmailContents(String subject, String sender) {
 		Document doc = null;
 		try {
 			FolderView fview = new FolderView(1);
@@ -112,7 +109,7 @@ public class OutlookUtility {
 			for(Item item : results) {
 				// To check that the email is not older than the execution start 
 				//time 
-				if (item.getDateTimeCreated().compareTo(ConfidProvider.getInstance().getExecutionStartedAt()) < 0)
+				if (item.getDateTimeCreated().compareTo(ConfigProvider.getInstance().getExecutionStartedAt()) < 0)
 					return null;
 
 				Map<String, String> messageData = readEmailItem(item.getId());
@@ -130,9 +127,7 @@ public class OutlookUtility {
 	}
 
 	/**
-	 * To get the body of the Email for the given Subject and sender in the form of
-	 * String
-	 * 
+	 * To get the body of the Email for the given Subject and sender in the form of String 
 	 * @param subject
 	 * @param sender
 	 * @return Return the email contents/body
@@ -163,22 +158,21 @@ public class OutlookUtility {
 			for (Item item : results) {
 				// To check that the email is not older than the execution start 
 				// time
-				if (item.getDateTimeCreated().compareTo(ConfidProvider.getInstance().getExecutionStartedAt()) < 0)
+				if (item.getDateTimeCreated().compareTo(ConfigProvider.getInstance().getExecutionStartedAt()) < 0)
 					return null;
 
 				Map<String, String> messageData = readEmailItem(item.getId());
-				Log.info("\Emails #" + (i++) + ":");
+				log.info("\nEmails #" + (i++) + ":");
 				String strSubject = messageData.get("subject").toString();
 				String strSender = messageData.get("senderName").toString();
-				if(strSubject.contains(subjects) && strSender.contains(sender)) {
+				if(strSubject.contains(subject) && strSender.contains(sender)) {
 					body = Jsoup.parse(messageData.get("emailBody")).text();
 					if(body.contains(value))
 						break;
-
 				}
 			}
 		} catch (Exception e) {
-			Log.error(e);
+			log.error(e);
 		}
 		return body;
 	}
@@ -190,7 +184,7 @@ public class OutlookUtility {
 	 * @param sender
 	 * @return Returns list of hyperlinks
 	 */
-	public LIst<String> getLinksFromEmailBody(String subject, String sender) {
+	public List<String> getLinksFromEmailBody(String subject, String sender) {
 		List<String> links = new ArrayList<>();
 		Document doc = getEmailContents(subject, sender);
 		if (doc == null) {
@@ -222,14 +216,14 @@ public class OutlookUtility {
 		messageData.put("senderName", emailMessage.getSender().getName().toString());
 		Date dateTimeCreated = emailMessage.getDateTimeCreated();
 		messageData.put("SendDate", dateTimeCreated.toString());
-		Date dateTimeReceived = emailMessage.getDateTimeReceived()
+		Date dateTimeReceived = emailMessage.getDateTimeReceived();
 				messageData.put("ReceivedDate", dateTimeReceived.toString());
 		messageData.put("Size", emailMessage.getSize() + "");
 		messageData.put("emailBody", emailMessage.getBody().toString());
 	}
 
 
-	private List<Attachments> getEmailAttachments(ItemId itemid) {
+	private List<Attachment> getEmailAttachments(ItemId itemid) {
 		try {
 			Item itm = Item.bind(service, itemid, PropertySet.FirstClassProperties);
 			EmailMessage emailMessage = EmailMessage.bind(service, itm.getId());
@@ -252,7 +246,7 @@ public class OutlookUtility {
 			FolderView fview = new FolderView(1);
 			fview.setPropertySet(new PropertySet(FolderSchema.DisplayName, FolderSchema.Id));
 
-			FindItemsResults<Item> results = service.findAppointments(getFolderId(), new ItemView(NUMBER_EMAILS_FETCH));
+			FindItemsResults<Item> results = service.findItems(getFolderId(), new ItemView(NUMBER_EMAILS_FETCH));
 			for(Item item : results) {
 				// To check that the email is not older than the execution start 
 				// time
@@ -263,7 +257,7 @@ public class OutlookUtility {
 				String strSender = messageData.get("senderName");		
 				if(strSubject.contains(subject) && strSender.contains(sender)) {
 					for(Attachment attachment : getEmailAttachments(item.getId()))
-						attachments.add(attachment.getName())
+						attachments.add(attachment.getName());
 				}
 			}
 		} catch (Exception e) {
@@ -276,7 +270,7 @@ public class OutlookUtility {
 		try
 		{
 			EmailMessage message = new EmailMessage(service);
-			EmailAddress fromEmailAddress = new EmailAddress(ConfigProvider.getInstance().getUserEmailId());
+			EmailAddress fromEmailAddress = new EmailAddress(ConfigProvider.getInstance().getUserName());
 			message.setFrom(fromEmailAddress);
 			message.getToRecipients().add(to);
 			message.setSubject(subject);
@@ -310,13 +304,13 @@ public class OutlookUtility {
 		List<EmailMessage> emails = new ArrayList<>();
 		try {
 			FolderView fview = new FolderView(1);
-			fview.setPropertySet(new PropertySet(FolderSChema.DisplayName, FolderSchema.Id));
+			fview.setPropertySet(new PropertySet(FolderSchema.DisplayName, FolderSchema.Id));
 			
 			FindItemsResults<Item> results = service.findItems(getFolderId(), new ItemView(NUMBER_EMAILS_FETCH));
-			for(ITEM item : results) {
+			for(Item item : results) {
 			// To check that the email is not older than the execution start 
 		    // time
-			if (item.getTimeCreated().compareTo(ConfigProvider.getInstance().getExectionStartedAt()) < 0)
+			if (item.getDateTimeCreated().compareTo(ConfigProvider.getInstance().getExecutionStartedAt()) < 0)
 				break;
 			
 			Map<String, String> messageData = readEmailItem(item.getId());
@@ -334,15 +328,15 @@ public class OutlookUtility {
 	private EmailMessage getEmailMessage(ItemId itemid) {
 		EmailMessage emailMesaage = null;
 		try {
-			Item itm = Item.bind(service, itemId, PropertySet.FIrstClassProperties);
-			emailMessage = EmailMessage.bind(service, itm.getId());
+			Item itm = Item.bind(service, itemid, PropertySet.FirstClassProperties);
+			emailMesaage = EmailMessage.bind(service, itm.getId());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return emailMessage;
+		return emailMesaage;
 	}
 	
 	public int getCountOfEmailsForSubject(String subject, String sender) {
-		return getListOfEmailsForSubject(subject, sender).size();
+		return getListOfEmailForSubject(subject, sender).size();
 	}
 }

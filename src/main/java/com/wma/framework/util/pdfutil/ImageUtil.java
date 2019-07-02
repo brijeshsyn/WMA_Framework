@@ -1,4 +1,4 @@
-package com.testautomationguru.utility;
+package com.wma.framework.util.pdfutil;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

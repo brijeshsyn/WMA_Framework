@@ -1,4 +1,4 @@
-package com.testautomationguru.utility;
+package com.wma.framework.util.pdfutil;
 
 /*
  * Copyright [2015] [www.testautomationguru.com]
