@@ -75,6 +75,6 @@ public class DatabaseReader {
 		newPath[newPath.length - 1] = pathToAdd;
 		usrPathsField.set(null, newPath);
 	}
-	
 }
+
  

@@ -119,7 +119,7 @@ public class TestRailAndExtentReporter extends ReportManager {
  * 
  * @return
  */
-	public String getTEstRailComments() {
+	public String getTestRailComments() {
 		return testRailComments;
 	}
 	

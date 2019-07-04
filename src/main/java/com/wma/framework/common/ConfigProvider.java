@@ -54,7 +54,7 @@ public class ConfigProvider {
 	private String year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
 	private String month = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
 	private String day = new SimpleDateFormat("dd").format(Calendar.getInstance().getTime());
-
+	
 	public static ConfigProvider getInstance() {
 		if (config == null) {
 			try {
@@ -116,11 +116,31 @@ public class ConfigProvider {
 		if(!this.logLocation.isEmpty())
 			this.resultFolder = this.logLocation;
 		else {
-			//TODO
+			this.resultFolder = rootDir + fileSeparator + "Resources" + fileSeparator + "Result" + fileSeparator + year
+					+ fileSeparator + month + fileSeparator + day;
+			log.info("Log location is not provided in the config file. therefore setting it to the default location : "
+		            + this.resultFolder); 
 		}
 		
+		this.timeStamp = new SimpleDateFormat("HHmmssa").format(Calendar.getInstance().getTime());
+		this.screenshotFolder = this.resultFolder + fileSeparator + "screenshots";
+		this.parallelExecution = prop.getProperty("ParallelExecution").equalsIgnoreCase("Yes") ? true : false;
+		this.threadCount = parallelExecution ? parseInt(prop.getProperty("ThreadCount")) : -1;
+		this.appiumConfigFilePath = frameworkFolderPath + fileSeparator + "Resources" + fileSeparator + "Configuration"
+				+ fileSeparator + "appium.properties";
+		this.dbServerName = prop.getProperty("DB_ServerName");
+		this.remoteWebDriverConfigFilePath = frameworkFolderPath + fileSeparator + "Resources" + fileSeparator 
+				+ "Configuration" + fileSeparator + "remoteDriverConfig.properties";
+		
+		log.info("Environment : + this.sEnvName");
+		log.info("# Iterations : " + this.iterations);
+		log.info("Browser : " + this.browserName);
+		log.info("Parallel Execution " + parallelExecution);
+		if (parallelExecution)
+			log.info("Thread Count : " + threadCount);
+		log.info("TestRail : " + testRail);
+		
 	}
-
 	private void setUserPassword(String filePath) {
 		ExcelUtilities excel = new ExcelUtilities(filePath);
 		if(excel.isSheetPresent(USER_DETAILS_SHEET_NAME)) {

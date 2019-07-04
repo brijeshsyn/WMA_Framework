@@ -1,8 +1,8 @@
 package com.wma.framework.util;
 
 import java.net.URI;
-import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -205,11 +205,12 @@ public class OutlookUtility {
 	/**  
 	 * Reading one email at a time. Using Item ID of the email. Creating a 
 	 * message data map as a return value.
+	 * @throws Exception 
 	 */
-	private Map<String, String> readEmailItem(ItemId itemId) {
+	private Map<String, String> readEmailItem(ItemId itemId) throws Exception {
 		Item itm = Item.bind(service, itemId, PropertySet.FirstClassProperties);
 		EmailMessage emailMessage = EmailMessage.bind(service, itm.getId());
-		Map<String, String> messageData;
+		Map<String, String> messageData = new HashMap<>();
 		messageData.put("emailItemId", emailMessage.getId().toString());
 		messageData.put("subject", emailMessage.getSubject().toString());
 		messageData.put("fromAddress", emailMessage.getFrom().getAddress().toString());
@@ -220,6 +221,8 @@ public class OutlookUtility {
 				messageData.put("ReceivedDate", dateTimeReceived.toString());
 		messageData.put("Size", emailMessage.getSize() + "");
 		messageData.put("emailBody", emailMessage.getBody().toString());
+		
+		return messageData;
 	}
 
 

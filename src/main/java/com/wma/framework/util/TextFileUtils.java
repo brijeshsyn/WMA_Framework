@@ -13,7 +13,7 @@ import java.util.Optional;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
-import com.google.common.io.Files;
+import com.wma.framework.common.ConfigProvider;
 
 public class TextFileUtils {
 	/**
