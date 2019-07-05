@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -108,16 +107,16 @@ public class ExcelUtilities {
 			while (cellIterator.hasNext()) {
 				Cell currentCell = cellIterator.next();
 
-				if (currentCell.getCellTypeEnum() == CellType.STRING)
+				if (currentCell.getCellType() == Cell.CELL_TYPE_STRING)
 					record.put(cols.get(columnCounter++), currentCell.getStringCellValue());
 
-				else if (currentCell.getCellTypeEnum() == CellType.NUMERIC)
-					record.put(col.get(columnCounter++), ((int) currentCell.getNumericCellValue()) + "");
+				else if (currentCell.getCellType() == Cell.CELL_TYPE_NUMERIC)
+					record.put(cols.get(columnCounter++), ((int) currentCell.getNumericCellValue()) + "");
 
-				else if (currentCell.getCellTypeEnum() == CellType.FORMULA)
-					record.put(cols.get(column++), currentcell.getRichStringCellValue().toString());
+				else if (currentCell.getCellType() == Cell.CELL_TYPE_FORMULA)
+					record.put(cols.get(columnCounter++), currentCell.getRichStringCellValue().toString());
 
-				else if (currentCell.getCellTypeEnum() == CellType.BLANK)
+				else if (currentCell.getCellType() == Cell.CELL_TYPE_BLANK)
 					record.put(cols.get(columnCounter++), "");
 			}
 		} catch (FileNotFoundException e) {
@@ -206,7 +205,7 @@ public class ExcelUtilities {
 			if(colNames.length > 0) {
 				Row row = sheet.createRow(0);
 				for(int i=0; i<colNames.length; i++) {
-					Cell cell = row.createCell(i, CellType.STRING);
+					Cell cell = row.createCell(i, Cell.CELL_TYPE_STRING);
 					cell.setCellValue(colNames[i]);
 				}
 			}

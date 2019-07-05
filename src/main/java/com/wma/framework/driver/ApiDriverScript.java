@@ -35,78 +35,80 @@ public class ApiDriverScript {
 	private static Logger log = Logger.getLogger(ApiDriverScript.class);
 	private TestRailAndExtentReporter tcLogger;
 	private Map<String, String> globalVariables;
-	private Map<ApiTestCase.ApiTestSteps, Response> responseOfSteps;
+	private Map<ApiTestCase.ApiTestSteps, Response> responsesOfSteps;
 	private Map<ApiTestCase.ApiTestSteps, ResultSet> dbQueryResultOfSteps;
 	private Map<String, String> paramsWithValues;
 	private List<ApiTestCase> testCases;
 	private boolean STOP_EXECUTION_ON_STEP_FAILURE = false;
-	private Object rs;
 
 	public void start() throws Exception {
 		log.info("Executing API Driver Script");
 
-		// Initialize the config setting from the Test Controller file 
+		// Initialize the config setting from the Test Controller file
 		ConfigProvider config = ConfigProvider.getInstance();
 
 		File myFile = new File(config.getResultFolder());
 		// Create results folder if doesn't exist already
-		if(!myFile.exists())
+		if (!myFile.exists())
 			myFile.mkdirs();
 
 		// Fetch the API end point url
 		String endPoint = config.getAppUrl();
 
-		//Initialize the API Test Case reader object which will read the testCases
+		// Initialize the API Test Case reader object which will read the testCases
 		ApiTestCaseReader tcReader = new ApiTestCaseReader(config);
 
 		// Read the test cases from the excel
 		testCases = tcReader.readApiTestCases();
 
-		// Read global variables 
+		// Read global variables
 		globalVariables = tcReader.getGlobalVariables();
 
 		for (int iteration = 1; iteration <= config.getIterations(); iteration++) {
 
 			// iterate through all the test cases
 			for (ApiTestCase testCase : testCases) {
-				// if the test case is already passed, do not execute it 
-				if (testCase.getExecutionStatus())
+				// if the test case is already passed, do not execute it
+				if (((ApiTestCase) testCases).getExecutionStatus())
 					continue;
 
-				log.info("Started execution of " + ( (ApiTestCase) testCases).getTest_ID() + " " + ((ApiTestCase) testCases).getTestCase_Name());
-				//Create Test Case in the report
-				tcLogger = TestRailAndExtentReporter.getInstance(config, ((ApiTestCase) testCases).getTestCase_Name(), "");
+				log.info("Started execution of " + ((ApiTestCase) testCases).getTest_ID() + " "
+						+ ((ApiTestCase) testCases).getTestCase_Name());
+				// Create Test Case in the report
+				tcLogger = TestRailAndExtentReporter.getInstance(config, ((ApiTestCase) testCases).getTestCase_Name(),
+						"");
 
-				// To store their parameter values which can be used in the Resource path 
+				// To store their parameter values which can be used in the Resource path
 				paramsWithValues = new HashMap<>();
 
-				// Store responses of each step and use it next steps if required 
-				responseOfSteps = new HashMap<>();
+				// Store responses of each step and use it next steps if required
+				responsesOfSteps = new HashMap<>();
 
 				// Store database query Result of each step and use it in next steps if required
 				dbQueryResultOfSteps = new HashMap<>();
-				try { 
+				try {
 					// Execute each test step
-					for (ApiTestCase.ApiTestSteps testStep : testCase.getTestSteps()) {
-						// Do not step which is marked as NO in the filed Execute Step
+					for (ApiTestCase.ApiTestSteps testStep : ((ApiTestCase) testCases).getTestSteps()) {
+						// Do not execute step which is marked as NO in the filed Execute Step
+						
 						if (testStep.getExecute_Step().equalsIgnoreCase("No"))
 							continue;
 
 						// Log the step which is currently executed in the report
 						tcLogger.log(Status.INFO, testStep.getStep_NUmber() + " : " + testStep.getStep_Description());
 
-						// Store the query result in this object for each step and use it whenever 
+						// Store the query result in this object for each step and use it whenever
 						// required
 						ResultSet dbQueryResult = null;
 
-						// Execute database query if there is query provided in the Database_Query field 
+						// Execute database query if there is query provided in the Database_Query field
 						if (!testStep.getDatabase_query().equals("")) {
 							// Execute database query
 							dbQueryResult = getdatabaseQueryresult(config, testStep);
 							dbQueryResultOfSteps.put(testStep, dbQueryResult);
 						}
 
-						// Fetch the resource, json, method values provided for the step 
+						// Fetch the resource, json, method values provided for the step
 						String resource = testStep.getResource();
 						String json = testStep.getJSON_Content();
 						String method = testStep.getRequest_Type();
@@ -128,16 +130,16 @@ public class ApiDriverScript {
 
 							params.removeAll(paramsFoundInGlobal);
 							if (!params.isEmpty())
-								resource = formatresourceParameters(testStep, dbQueryResult, resource, params);
+								resource = formatResourceParameters(testStep, dbQueryResult, resource, params);
 						} // End of if(!param.isEmpty())
 
-						// Format JSON, by replacing the variables with proper value from DB Query 
-						// or Response of previous step 
+						// Format JSON, by replacing the variables with proper value from DB Query
+						// or Response of previous step
 						List<String> jsonParams = getParameterFromJson(json);
 						if (!jsonParams.isEmpty())
 							json = formatJsonValues(json, jsonParams);
 
-						// Store the response object 
+						// Store the response object
 						Response res;
 
 						// Set the end point for the APIs
@@ -147,7 +149,7 @@ public class ApiDriverScript {
 						resource = resource.replaceAll(Pattern.quote("{"), "").replaceAll(Pattern.quote("}"), "");
 
 						// Excute specific HTTP method based on the method in the step
-						switch (method.toUpperCase()
+						switch (method.toUpperCase()) {
 						case "GET":
 							tcLogger.log(Status.INFO, "Executing GET method with resource : " + resource);
 							res = rest.get(resource);
@@ -175,79 +177,80 @@ public class ApiDriverScript {
 							tcLogger.log(Status.FAIL, "Invalid Request Type (HTTP Method)");
 							testStep.setExecution_Status(false);
 							throw new Exception("Invalid Request Type (HTTP Method)");
-					}
+						}
 
-					if (res.getStatusCode() >= 200 && res.getStatusCode() < 300)
-						tcLogger.log(Status.PASS, method.toUpperCase()
-								+ " method executed Succesfully \nHTTP Status Code : " + res.getStatusCode());
-					else {
-						tcLogger.log(Status.FAIL,
-								"Some error occurred while accessing the api.\nHTTP Status Code : "
-										+ res.getStatusCode() + "<br/>Message : " + res.body().asString());
-						testStep.setExecution_Status(false);
-					}
-					//Store the response of current step in the Map object, so that it can be used 
-					// in later steps 
-					responseOfSteps.put(testStep, res);
-
-					// Validations
-					if (!testStep.getExpected_Status_Code().isEmpty()) {
-						if (Integer.parseInt(testStep.getExpected_Status_Code()) == res.getStatusCode())
-							tcLogger.log(Status.PASS, "As expected , HTTP Status code is " + res.getStatusCode());
+						if (res.getStatusCode() >= 200 && res.getStatusCode() < 300)
+							tcLogger.log(Status.PASS, method.toUpperCase()
+									+ " method executed Succesfully \nHTTP Status Code : " + res.getStatusCode());
 						else {
-							tcLogger.log(Status.FAIL, "Expected status code is not displayed");
+							tcLogger.log(Status.FAIL,
+									"Some error occurred while accessing the api.\nHTTP Status Code : "
+											+ res.getStatusCode() + "<br/>Message : " + res.body().asString());
 							testStep.setExecution_Status(false);
 						}
-					}
+						// Store the response of current step in the Map object, so that it can be used
+						// in later steps
+						responsesOfSteps.put(testStep, res);
 
-					// Validation of the expected contents in the respons body 
-					if (!testStep.getContent_Expected_In_Response().isEmpty()) {
-						String[] temp = testStep.getContent_Expected_In_Response().split(Pattern.quote(";"));
-
-						for (String str : temp) {
-							String key = str.split(Pattern.quote(":"))[0];
-							String expectedValue = str.split(Pattern.quote(":"))[1].trim();
-
-							List<String> msges = getParameterFromJson(expectedValue);
-							if (!msges.isEmpty())
-								expectedValue = formatJsonValues(expectedValue, msges);
-
-							String actualValue = ((Object) res.body().jsonPath().get(key)).toString().trim();
-							if (expectedValue.toLowerCase().equalsIgnoreCase(actualValue))
-								tcLogger.log(Status.PASS,
-										"Below Assertion Passed<br/>" + key + ":" + expectedValue);
+						// Validations
+						if (!testStep.getExpected_Status_Code().isEmpty()) {
+							if (Integer.parseInt(testStep.getExpected_Status_Code()) == res.getStatusCode())
+								tcLogger.log(Status.PASS, "As expected , HTTP Status code is " + res.getStatusCode());
 							else {
-								tcLogger.log(Status.FAIL,
-										"Below Assertion Failed<br/>" + key + ":" + expectedValue);
+								tcLogger.log(Status.FAIL, "Expected status code is not displayed");
 								testStep.setExecution_Status(false);
 							}
 						}
 
-					} // End of validation of expected contents in the response body 
+						// Validation of the expected contents in the respons body
+						if (!testStep.getContent_Expected_In_Response().isEmpty()) {
+							String[] temp = testStep.getContent_Expected_In_Response().split(Pattern.quote(";"));
 
-					// Execute script assertions if any 
-					if (!testStep.getScript_Validation().isEmpty()) {
-						if(executeScriptAssertion(testStep))
-							tcLogger.log(Status.PASS, "All Assertions Passed");
-						else {
-							tcLogger.log(Status.FAIL, "It seems that few Assertions failed");
-							testStep.setExecution_Status(false);
+							for (String str : temp) {
+								String key = str.split(Pattern.quote(":"))[0];
+								String expectedValue = str.split(Pattern.quote(":"))[1].trim();
+
+								List<String> msges = getParameterFromJson(expectedValue);
+								if (!msges.isEmpty())
+									expectedValue = formatJsonValues(expectedValue, msges);
+
+								String actualValue = ((Object) res.body().jsonPath().get(key)).toString().trim();
+								if (expectedValue.toLowerCase().equalsIgnoreCase(actualValue))
+									tcLogger.log(Status.PASS,
+											"Below Assertion Passed<br/>" + key + ":" + expectedValue);
+								else {
+									tcLogger.log(Status.FAIL,
+											"Below Assertion Failed<br/>" + key + ":" + expectedValue);
+									testStep.setExecution_Status(false);
+								}
+							}
+
+						} // End of validation of expected contents in the response body
+
+						// Execute script assertions if any
+						if (!testStep.getScript_Validation().isEmpty()) {
+							if (executeScriptAssertion(testStep))
+								tcLogger.log(Status.PASS, "All Assertions Passed");
+							else {
+								tcLogger.log(Status.FAIL, "It seems that few Assertions failed");
+								testStep.setExecution_Status(false);
+							}
 						}
-					}
 
-					//When STOP_ON_STEP_FAILURE is set to true, the execution of the test case should be stopped on failure of any step 
-					if(STOP_EXECUTION_ON_STEP_FAILURE && !testStep.getExecution_Status()) {
-						log.info("*****************************");
-						log.info("Due to failure of the step, Test Case execution has been stopped");
-						log.info("Next Test Case execution will be started...");
-						log.info("*****************************");
-						break;
-					}
-				} // End of TEst Steps 
-				// End of Try
+						// When STOP_ON_STEP_FAILURE is set to true, the execution of the test case
+						// should be stopped on failure of any step
+						if (STOP_EXECUTION_ON_STEP_FAILURE && !testStep.getExecution_Status()) {
+							log.info("*****************************");
+							log.info("Due to failure of the step, Test Case execution has been stopped");
+							log.info("Next Test Case execution will be started...");
+							log.info("*****************************");
+							break;
+						}
+					} // End of TEst Steps
+				} // End of Try
 				catch (Exception e) {
 					e.printStackTrace();
-				} // End of Catch	
+				} // End of Catch
 
 				// mark test case as pass/fail
 				if (tcLogger.getCurrentExtentTest().getStatus().equals(Status.PASS))
@@ -266,25 +269,25 @@ public class ApiDriverScript {
 		} // End of Iterations loop
 	} // start method ends
 
-	// To format the resource string by replacing the variables with proper values 
+	// To format the resource string by replacing the variables with proper values
 	// from either DB Query ot Response of previous step
-	private String formatresourceParameters(ApiTestCase.ApiTestSteps testStep, ResultSet dbQueryResult, String resource,
+	private String formatResourceParameters(ApiTestCase.ApiTestSteps testStep, ResultSet dbQueryResult, String resource,
 			List<String> params) throws SQLException {
 
-		// When resource contains parameters 
+		// When resource contains parameters
 		// Fetch parameter values from response of previous step or database query
 		if (!testStep.getParameters().isEmpty()) {
 
 			// Configure parameters object
-			String[] temo = testStep.getParameters().split(Pattern.quote("||"));
+			String[] temp = testStep.getParameters().split(Pattern.quote("||"));
 			if (testStep.getParameters().toLowerCase().contains("query")
 					|| testStep.getParameters().toLowerCase().contains("response")) {
 				List<ResourceParameter> resourceParams = new ArrayList<>();
 				List<String> globalVariableParam = new ArrayList<>();
 				List<String> keyValuePairedParams = new ArrayList<>();
 
-				// Categorize the parameters 
-				for (String tmp : temo) {
+				// Categorize the parameters
+				for (String tmp : temp) {
 					if (tmp.toLowerCase().contains("global"))
 						globalVariableParam.add(tmp);
 
@@ -298,13 +301,13 @@ public class ApiDriverScript {
 						// Create object of ResourceParameter
 						ResourceParameter rp = new ResourceParameter();
 
-						// Set values for the object 
+						// Set values for the object
 						rp.setName(parameterName).setStepNumberReference(temp1[0]).setQueryOrResponse(temp1[1])
-						.setKey(temp1[2]);
+								.setKey(temp1[2]);
 
-						// Add the object in the list 
+						// Add the object in the list
 						resourceParams.add(rp);
-					} else 
+					} else
 						keyValuePairedParams.add(tmp);
 				}
 
@@ -316,16 +319,16 @@ public class ApiDriverScript {
 
 				// Configure parameters from Response/Query
 				for (ResourceParameter resourceParam : resourceParams) {
-					// Fetch parameter value from Database query 
+					// Fetch parameter value from Database query
 					if (resourceParam.getQueryOrResponse().toLowerCase().contains("query")) {
 						ResultSet rs = null;
 
-						// Fetch data from current steps db query result, if the StepNumber mentioned 
+						// Fetch data from current steps db query result, if the StepNumber mentioned
 						// is equal to current step
 						if (resourceParam.getStepNumberReference().contains(testStep.getStep_NUmber()))
 							rs = dbQueryResult;
 
-						// Else fetch  data from prvious step's db query result which is stores in 
+						// Else fetch data from prvious step's db query result which is stores in
 						// required step
 						for (ApiTestSteps step : dbQueryResultOfSteps.keySet()) {
 							if (step.getStep_NUmber().equalsIgnoreCase(resourceParam.getStepNumberReference())) {
@@ -333,240 +336,243 @@ public class ApiDriverScript {
 								break;
 							}
 						}
+
+						if (rs != null) {
+							((ResultSet) rs).next();
+							paramsWithValues.put(resourceParam.getName(),
+									((ResultSet) rs).getString(resourceParam.getKey()));
+						} else
+							log.error("Invalid Parameter key");
+					}
+					// Fetch parameter value from response of previous steps, which is stores in
+					// responsesOfSteps Object
+					else if (testStep.getParameters().toLowerCase().contains("response")) {
+						Response res = null;
+						for (ApiTestSteps step : responsesOfSteps.keySet()) {
+							if (step.getStep_NUmber().equalsIgnoreCase(resourceParam.getStepNumberReference())) {
+								res = responsesOfSteps.get(step);
+								break;
+							}
+						}
+						if (res != null) {
+							String value = null;
+							try {
+								value = getValueFromJson(res.body().asString(), resourceParam.getKey());
+							} catch (Exception e) {
+								value = ((Object) res.body().jsonPath().get(resourceParam.getKey())).toString();
+							}
+							paramsWithValues.put(resourceParam.getName(), value);
+
+						} else
+							log.error("Invalid Parameter key");
+					}
+				}
+			}
+			else {
+				for (String tmp : temp) {
+					String[] keyValue = tmp.split(Pattern.quote("="));
+					paramsWithValues.put(keyValue[0], keyValue[1]);
+				}
+			}
+		}
+		// Check whether parameter is present in paramWithValue object
+		// Replace the parameter value in the resource with the value present in the
+		// paramWithValue object
+		resource = addValueInResourceForParameters(resource, params);
+		return resource;
+	}
+
+	// Format resource contents and replace the place holders with values
+	private String addValueInResourceForParameters(String resource, List<String> params) {
+		for (int i = 0; i < params.size(); i++) {
+			String parameterName = params.get(i);
+			if (paramsWithValues.containsKey(parameterName))
+				resource = resource.replaceAll(parameterName, paramsWithValues.get(parameterName));
+
+		}
+		return resource;
+	}
+
+	// To execute the dtabase query of the test step and return the Result of the
+	// query
+	private ResultSet getdatabaseQueryresult(ConfigProvider config, ApiTestCase.ApiTestSteps testStep) {
+		ResultSet dbQueryResult = null;
+		DatabaseReader dbReader = new DatabaseReader();
+		Connection con;
+		try {
+			con = dbReader.getSqlDbConnection(config.getDbServerName());
+			Statement stmt = con.createStatement();
+			dbQueryResult = stmt.executeQuery(testStep.getDatabase_query());
+		} catch (ClassNotFoundException | SQLException e) {
+			log.error("Query could not be executed successfully");
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+
+		return dbQueryResult;
+	}
+
+	// Fetch the lis tof parameters (Place Holders) required in the Resource
+	private List<String> getParameterFromResource(String resource) {
+		List<String> params = new ArrayList<>();
+		String[] temp = resource.split(Pattern.quote("/"));
+		for (String str : temp) {
+			if (str.contains("{"))
+				params.add(str.replace("{", "").replace("}", ""));
+		}
+		return params;
+	}
+
+	private String formatJsonValues(String json, List<String> params) {
+		Map<String, String> paramsWithValues = new HashMap<>();
+		for (String param : params) {
+
+			// Fetch the step number reference and key for which value would be searched
+			String[] tmp = param.replaceAll(Pattern.quote("$"), "").replaceAll(Pattern.quote("("), "")
+					.replaceAll(Pattern.quote("}"), "").split(Pattern.quote("#"));
+			String stepNumber = tmp[0];
+			String key = tmp[2];
+
+			// fetch data from database query, it param contains Query keyword
+			if (param.contains("query")) {
+				ResultSet result = null;
+				for (ApiTestCase.ApiTestSteps step : dbQueryResultOfSteps.keySet())
+					if (step.getStep_NUmber().equalsIgnoreCase(stepNumber)) {
+						result = dbQueryResultOfSteps.get(step);
+						break;
 					}
 
-					if (rs != null) {
-						((ResultSet) rs).next();
-						paramsWithValues.put(resourceParam.getName(), ((ResultSet) rs).getString(resourceParam.getKey()));
-					} else 
-						log.error("Invalid Parameter key");
+				if (result == null) {
+					log.error("Invalid Step Number reference in parameter : " + param);
+					return null;
 				}
-				// Fetch parameter value from response of previous steps, which is stores in
-				// responsesOfSteps Object 
-				else if (testStep.getParameters().toLowerCase().contains("response")) {
-					Response res = null;
-					for (ApiTestSteps step  : responseOfSteps.keySet()) {
-						if (step.getStep_NUmber().equalsIgnoreCase(resource.getStepNumberReference())) {
-							res = responseOfSteps.get(step);
-							break;
-						}
+
+				try {
+					result.next();
+					paramsWithValues.put(param, result.getString(key));
+				} catch (SQLException e) {
+					log.error(
+							"It seems, there are no result set returned by the query used in the step: " + stepNumber);
+				}
+
+			}
+			// Fetch data from Response, if param contains Response keyword
+			else if (param.toLowerCase().contains("response")) {
+				Response res = null;
+				for (ApiTestCase.ApiTestSteps step : responsesOfSteps.keySet())
+					if (step.getStep_NUmber().equalsIgnoreCase(stepNumber)) {
+						res = responsesOfSteps.get(step);
+						break;
 					}
-					if (res != null) {
-						String value = null;
-						try {
-							value = getValueFromJson(res.body().asString(), resourceParam.getkey());
-						} catch (Exception e) {
-							value = ((Object) res.body().jsonPath().get(resource.getKey())).toString();
-						}
-						paramsWithValues.put(resourceParam.getName(), value);
 
-					} else 
-						log.error("Invalid Parameter key");
-				}
-			} 
-		} else {
-			for (String tmp : tmp) {
-				String[] keyValue = tmp.split(Pattern.quote("="));
-				paramsWithValues.put(keyValue[0], keyValue[1]);
-			}
-		}
-	}
-	// Check whether parameter is present in paramWithValue object 
-	// Replace the parameter value in the resource with the value present in the 
-	// paramWithValue object
-	resource = addValueInResourceForParameters(resource, params);
-	return resource;
-}
-
-// Format resource contents and replace the place holders with values
-private String addValueInResourceForParameters(String resource, List<String> params) {
-	for (int i=0; i< params.size(); i++) {
-		String parameterName = params.get(i);
-		if (paramsWithValues.containsKey(parameterName))
-			resource = resource.replaceAll(parameterName, paramsWithValues.get(parameterName));
-
-	}
-	return resource;
-}
-
-// To execute the dtabase query of the test step and return the Result of the query 
-private ResultSet getdatabaseQueryresult(ConfigProvider config, ApiTestCase.ApiTestSteps testStep) {
-	ResultSet dbQueryResult = null;
-	DatabaseReader dbReader = new DatabaseReader();
-	Connection con;
-	try {
-		con = dbReader.getSqlDbConnection(config.getDbServerName());
-		Statement stmt = con.createStatement();
-		dbQueryResult = stmt.executeQuery(testStep.getDatabase_query());
-	} catch (ClassNotFoundException | SQLException e) {
-		log.error("Query could not be executed successfully");
-		log.error(e.getMessage());
-		e.printStackTrace();
-	}
-
-	return dbQueryResult;
-}
-
-// Fetch the lis tof parameters (Place Holders) required in the Resource
-private List<String> getParameterFromResource(String resource) {
-	List<String> params = new ArrayList<>();
-	String[] temp = resource.split(Pattern.quote("/"));
-	for (String str : temp) {
-		if (str.contains("{"))
-			params.add(str.replace("{", "").replace("}", ""));
-	}
-	return params;
-}
-
-private String formatJsonValues(String json, List<String> params) {
-	Map<String, String> paramsWithValues = new HashMap<>();
-	for (String param : params) {
-
-		// Fetch the step number reference and key for which value would be searched 
-		String[] tmp = param.replaceAll(Pattern.quote("$"), "").replaceAll(Pattern.quote("("), "")
-				.replaceAll(Pattern.quote("}"), "").split(Pattern.quote("#"));
-		String stepNumber = tmp[0];
-		String key = tmp[2];
-
-		// fetch data from database query, it param contains Query keyword
-		if (param.contains("query")) {
-			ResultSet result = null;
-			for (ApiTestCase.ApiTestSteps step : dbQueryResultOfSteps.keySet())
-				if (step.getStep_NUmber().equalsIgnoreCase(stepNumber)) {
-					result = dbQueryResultOfSteps.get(step);
-					break;
+				if (res == null) {
+					log.error("Invalid Step Number reference in parameter : " + param);
+					return null;
 				}
 
-			if (result == null) {
-				log.error("Invalid Step Number reference in parameter : " + param);
-				return null;
-			}
-
-			try {
-				result.next();
-				paramsWithValues.put(param, result.getString(key));
-			} catch (SQLException e) {
-				log.error(
-						"It seems, there are no result set returned by the query used in the step: " + stepNumber);
-			}
-
-		}
-		// Fetch data from Response, if param contains Response keyword
-		else if (param.toLowerCase().contains("response")) {
-			Response res = null;
-			for (ApiTestCase.ApiTestSteps step : responseOfSteps.keySet())
-				if (step.getStep_NUmber().equalsIgnoreCase(stepNumber)) {
-					res = responseOfSteps.get(step);
-					break;
+				String value = "";
+				try {
+					value = ((Object) res.body().jsonPath().get(key)).toString();
+				} catch (Exception e) {
+					log.error(e.getMessage());
+					log.error(res.body().asString());
 				}
-
-			if (res == null) {
-				log.error("Invalid Step Number reference in parameter : " + param);
-				return null;
+				paramsWithValues.put(param, value);
 			}
+		}
 
-			String value ="";
-			try {
-				value = ((Object) res.body().jsonPath().get(key)).toString();
-			} catch (Exception e) {
-				log.error(e.getMessage());
-				log.error(res.body().asString());
+		// Replace the parameters from the JSON
+		for (String str : params) {
+			if (!paramsWithValues.containsKey(str))
+				log.error("Value could be not be found for Param : " + str);
+			else
+				json = json.replaceAll(Pattern.quote(str), paramsWithValues.get(str));
+		}
+
+		return json;
+	}
+
+	// Fetch list of variable parameters configures in Json
+	private List<String> getParameterFromJson(String json) {
+		int start = 0;
+		int end = 0;
+
+		Map<Integer, Integer> startEnd = new HashMap<>();
+		boolean started = false;
+		for (int i = 0; i < json.length(); i++) {
+
+			if (json.charAt(i) == '$' && json.charAt(i + 1) == '{') {
+				start = i;
+			} else if (started && start > 0 && json.charAt(i) == '}') {
+				end = i + 1;
+				startEnd.put(start, end);
+				i = end;
+				started = false;
 			}
-			paramsWithValues.put(param, value);
 		}
-	}
 
-	// Replace the parameters from the JSON
-	for (String str : params) {
-		if (!paramsWithValues.containsKey(str))
-			log.error("Value could be not be found for Param : " + str);
-		else 
-			json = json.replaceAll(Pattern.quote(str), paramsWithValues.get(str));
-	}
-
-	return json;
-}
-
-// Fetch list of variable parameters configures in Json
-private List<String> getParameterFromJson(String json) {
-	int start = 0;
-	int end = 0;
-
-	Map<Integer, Integer> startEnd = new HashMap<>();
-	boolean started = false;
-	for (int i=0; i< json.length(); i++) {
-
-		if (json.charAt(i) == '$' && json.charAt(i + 1) == '{') {
-			start = i;
-		} else if (started && start > 0 && json.charAt(i) == '}') {
-			end = i + 1;
-			startEnd.put(start, end);
-			i = end;
-			started = false;
+		List<String> params = new ArrayList<>();
+		for (Integer i : startEnd.keySet()) {
+			String param = json.substring(i, startEnd.get(i));
+			System.out.println(param);
+			params.add(param);
 		}
+
+		return params;
 	}
 
-	List<String> params = new ArrayList<>();
-	for (Integer i : startEnd.keySet()) {
-		String param = json.substring(i, startEnd.get(i));
-		System.out.println(params);
-		params.addAll(params);
+	// Script assertions are executed through this method
+	// Using the concept of Reflections in Java, we fetch the class and the method
+	// and execute them
+	// It is assumed that the value passed in the Script Validation field will be
+	// 'className,methodName'
+	private boolean executeScriptAssertion(ApiTestCase.ApiTestSteps step) {
+		String temp[] = step.getScript_Validation().split(Pattern.quote("."));
+		String className = temp[0];
+		String methodName = temp[1];
+		String packageName = "com.api.assertions";
+
+		Boolean returnObject = false;
+		try {
+			Class<?> myClass = Class.forName(packageName + "." + className);
+			Method[] methods = myClass.getMethods();
+			for (Method method : methods)
+				if (methodName.equalsIgnoreCase(method.getName()))
+					returnObject = (Boolean) method.invoke(myClass.newInstance(), step, responsesOfSteps,
+							dbQueryResultOfSteps, tcLogger);
+
+			return returnObject.booleanValue();
+
+		} catch (ClassNotFoundException e) {
+			log.error("Please check the class name");
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			log.error("It seems, the method doesn't accept few mandatory parameters");
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
-	return params;
-}
-
-
-//Script assertions are executed through this method 
-//Using the concept of Reflections in Java, we fetch the class and the method and execute them 
-//It is assumed that the value passed in the Script Validation field will be 'className,methodName'
-private boolean executeScriptAssertion(ApiTestCase.ApiTestSteps step) {
-	String temp[] = step.getScript_Validation().split(Pattern.quote("."));
-	String className = temp[0];
-	String methodName = temp[1];
-	String packageName = "com.api.assertions";
-
-	Boolean returnObject = false;
-	try {
-		Class<?> myClass = Class.forName(packageName + "." + className);
-		Method[] methods = myClass.getMethods();
-		for(Method method : methods)
-			if (methodName.equalsIgnoreCase(method.getName()))
-				returnObject = (Boolean) method.invoke(myClass.newInstance(), step, responseOfSteps,
-						dbQueryResultOfSteps, tcLogger);
-
-		return returnObject.booleanValue();
-
-	} catch (ClassNotFoundException e) {
-		log.error("Please check the class name");
-		e.printStackTrace();
-	} catch (IllegalAccessException e) {
-		e.printStackTrace();
-	} catch (IllegalArgumentException e) {
-		log.error("It seems, the method doesn't accept few mandatory parameters");
-		e.printStackTrace();
-	} catch (InvocationTargetException e) {
-		e.printStackTrace();
-	} catch (InstantiationException e) {
-		e.printStackTrace();
+	private String getValueFromJson(String json, String nodePath) {
+		DocumentContext jsonContext = JsonPath.parse(json);
+		return jsonContext.read(nodePath).toString();
 	}
 
-	return false;
-}
-
-private String getValueFromJson(String json, String nodePath) {
-	DocumentContext jsonContext = JsonPath.parse(json);
-	return jsonContext.read(nodePath).toString();
-}
-
-/**
- * Set the flag to true, if we want the test case execution to be stopped on failure on any step
- * @param flag
- */
-public void setStopTestCaseExecutionOnStepFailure(boolean flag) {
-	this.STOP_EXECUTION_ON_STEP_FAILURE = flag;
-}
-
+	/**
+	 * Set the flag to true, if we want the test case execution to be stopped on
+	 * failure on any step
+	 * 
+	 * @param flag
+	 */
+	public void setStopTestCaseExecutionOnStepFailure(boolean flag) {
+		this.STOP_EXECUTION_ON_STEP_FAILURE = flag;
+	}
 
 }
-
