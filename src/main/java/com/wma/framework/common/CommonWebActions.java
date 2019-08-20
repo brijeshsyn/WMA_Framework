@@ -52,9 +52,18 @@ public class CommonWebActions<T extends PageElement> {
 
 	private WebElement getWebElement(T element, String... placeholders) {
 		try {
-			return driver.findElement(ByFactory.getBy(element.getType(), element.getExpression(), placeholders));
+			//Checking if the ByType is Accessibility_Id, and finding the element accordingly
+			if(element.getType() == ByType.ACCESSIBILITY_ID)
+				return ((WindowsDriver<WebElement>)driver).findElementByAccessibilityId(element.getExpression());
+			else
+				return driver.findElement(ByFactory.getBy(element.getType(), element.getExpression(), placeholders));
 		} catch(Exception e) {
-			return new WebDriverWait(driver, config.getDefaultTimeOut()).until(ExpectedConditions.elementToBeClickable(ByFactory.getBy(element.getType(), element.getExpression(), placeholders)));
+			if(element.getType() != ByType.ACCESSIBILITY_ID)
+				return new WebDriverWait(driver, config.getDefaultTimeOut()).until(ExpectedConditions.elementToBeClickable(ByFactory.getBy(element.getType(), element.getExpression(), placeholders)));
+			else {
+				log.error("Element could not be found");
+				return null;
+			}
 		}
 	}
 

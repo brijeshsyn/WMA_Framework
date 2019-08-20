@@ -52,7 +52,6 @@ public class WebDriverFactory {
 	private static WebDriver driver = null;
 	private static WebDriver chromeDriver = null;
 	private static ConfigProvider config = ConfigProvider.getInstance();
-	private static boolean isTunnelStarted = false;
 	
 	/**
 	* Create an instance of web driver based on the browser name provided in the 
@@ -214,33 +213,26 @@ public class WebDriverFactory {
  private static WebDriver getRemoteWebDriver() throws FileNotFoundException, IOException, InterruptedException {
 	 WebDriver driver;
 	 
-	 DesiredCapabilities capabilities;
-	 
 	 Properties prop = new Properties();
 	 prop.load(new FileInputStream(new File(config.getRemoteWebDriverConfigFilePath())));
 	 
-	 String remoteURL = prop.getProperty("remoteURl");
-	 prop.remove("remoteURl");
-	 String commandForTunnel = prop.getProperty("commandToStartTunnel");
-	 prop.remove("commandToStartTunnel");
+	 String remoteURL;
+	 String urlKey="";
+	 if(prop.containsKey("remoteURL"))
+		 urlKey = "remoteURL";
+	 else if (prop.containsKey("winAppURL"))
+		 urlKey = "winAppURL";
+	 else if (prop.containsKey("appiumURL"))
+		 urlKey = "appiumURL";
+	 else
+		 System.err.println("Please provide Remote Driver's URL in the properties file");
+		 
+	 remoteURL = prop.getProperty("urlKey");
+	 prop.remove(urlKey);
 	 
-	 // Do not start the tunnel if it is already started 
-	 if (!isTunnelStarted) {
-		 // **********PROXY SETUP******************
-		 System.setProperty("http.proxyHost","proxy.aqrcapital.com");
-		 System.setProperty("http.proxyPort", "8080");
-		 System.setProperty("http.proxyHost","proxy.aqrcapital.com");
-		 System.setProperty("http.proxyPort", "8080");
-		 System.setProperty("http.nonProxyHosts", ".aqr.com");
-		 // *******************************************************
-		 System.out.println("Starting SauceLabs tunnel...");
-		 config.runWindowsCommand(commandForTunnel);
-		 System.out.println("Waiting for 10 seconds");
-		 Thread.sleep(5000);
-		 isTunnelStarted = true;
-	 }
-	 capabilities = new DesiredCapabilities();
+	 DesiredCapabilities capabilities = new DesiredCapabilities();
 	 System.out.println("Remote WebDriver Configurations as follows :\n" + prop);
+	 
 	 for (Object key : prop.keySet())
 		 capabilities.setCapability(key.toString(), prop.get(key).toString());
 	 

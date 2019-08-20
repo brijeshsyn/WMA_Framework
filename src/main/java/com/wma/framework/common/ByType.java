@@ -9,4 +9,5 @@ public enum ByType {
 	TAG_NAME,
 	CSS_SELECTOR,
 	XPATH,
+	ACCESSIBILITY_ID,
 }
