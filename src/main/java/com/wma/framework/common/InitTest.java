@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -19,14 +20,12 @@ import com.wma.framework.util.ExcelUtilities;
 
 import io.appium.java_client.windows.WindowsDriver;
 
-
-
 /**
  * InitTest class is, the class which should be inherited/extended by each Test
  * Script class which will contain the test cases. The TestScirpt class can use
  * the methods of BasicWebTest class for some basic operations. It initializes
- * the test execution in the BeforeSuite ethod, and does the tear down in the 
- * AfterSuite method 
+ * the test execution in the BeforeSuite method, and does the tear down in the
+ * AfterSuite method
  *
  * @author singhb
  *
@@ -36,7 +35,7 @@ public abstract class InitTest {
 
 	private static APIClient client;
 	private WebDriver driver;
-	private WindowsDriver winDriver;
+	private WindowsDriver<WebElement> winDriver;
 
 	@BeforeSuite
 	public void beforeSuite() {
@@ -54,6 +53,7 @@ public abstract class InitTest {
 	public void afterSuit() {
 		log.info("After Suite...");
 	}
+
 	/**
 	 * To initialize the WebDriver
 	 * 
@@ -93,7 +93,7 @@ public abstract class InitTest {
 		driver = null;
 	}
 
-	/** 
+	/**
 	 * To close the non-default web driver instance
 	 */
 	public void quitChromeDriver() {
@@ -113,18 +113,18 @@ public abstract class InitTest {
 	}
 
 	/**
-	 * To get a Row of data into a key, value form 
+	 * To get a Row of data into a key, value form
 	 * 
-	 * @param testCaseTitle 
+	 * @param testCaseTitle
 	 * @return
 	 */
 	public Map<String, String> getTestDataWhere(String testCaseTitle) {
 		return getTestDataWhere("TestCaseTitle", testCaseTitle);
 	}
-	
+
 	/**
-	 * This is used to update the final status of the test case. It is meant to be 
-	 * used in finally block of every testscript 
+	 * This is used to update the final status of the test case. It is meant to be
+	 * used in finally block of every testscript
 	 * 
 	 * @param runId
 	 * @param caseId
@@ -148,7 +148,7 @@ public abstract class InitTest {
 			// updateTestStatus(strTestCaseTitle, "Pass");
 		}
 
-		if(config().getTestRail().equalsIgnoreCase("Yes")) {
+		if (config().getTestRail().equalsIgnoreCase("Yes")) {
 			data.put("comment", tcLogger.getTestRailComments());
 			try {
 				log.info("Updating log in Test Rail");
@@ -161,16 +161,16 @@ public abstract class InitTest {
 		}
 		Assert.assertTrue(executeStatus);
 	}
-	
+
 	/**
 	 * To initialize the WindowsDriver
 	 * 
 	 * @return
 	 */
-	public WindowsDriver getWindowsDriver() {
+	public WindowsDriver<WebElement> getWindowsDriver() {
 		if (winDriver == null || winDriver.toString().contains("null")) {
 			winDriver = WinAppDriverFactory.getWindowsDriver();
-			
+
 		}
 		return winDriver;
 	}

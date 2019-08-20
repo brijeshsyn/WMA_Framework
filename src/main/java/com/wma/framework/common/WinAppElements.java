@@ -1,41 +1,28 @@
 package com.wma.framework.common;
 
-import org.openqa.selenium.By;
-import static com.wma.framework.common.ByType.*;
-import static com.wma.framework.common.Frame.*;
+import static com.wma.framework.common.ByType.CLASS_NAME;
+import static com.wma.framework.common.ByType.NAME;
+import static com.wma.framework.common.ByType.XPATH;
 
 public enum WinAppElements implements PageElement{
 
-	LAYOUT(NAME, "Layout", DEFAULT),
-	CONTROLS(NAME, "Controls", DEFAULT),
-	BUTTON(XPATH,"//*[@Name='Button' and @ClassName='TextBlock']",DEFAULT),
-	CLICKME(NAME,"Click Me",DEFAULT),
-	PASSWORDBOX(NAME,"PasswordBox",DEFAULT),
-	PASSWORDBOXTEXTBOX(CLASS_NAME,"PasswordBox",DEFAULT),
-	CHECKBOX(NAME,"CheckBox",DEFAULT),
+	LAYOUT(NAME, "Layout"),
+	CONTROLS(NAME, "Controls"),
+	BUTTON(XPATH,"//*[@Name='Button' and @ClassName='TextBlock']"),
+	CLICKME(NAME,"Click Me"),
+	PASSWORDBOX(NAME,"PasswordBox"),
+	PASSWORDBOXTEXTBOX(CLASS_NAME,"PasswordBox"),
+	CHECKBOX(NAME,"CheckBox"),
 	;
-	
-	
+		
 	private final String EXPRESSION;
 	private final ByType BY_TYPE;
-	private final Frame FRAME;
 	
-	private WinAppElements(ByType byType, String expr, Frame frame) {
+	private WinAppElements(ByType byType, String expr) {
 		this.BY_TYPE = byType;
 		this.EXPRESSION = expr;
-		this.FRAME = frame;		
 	}
-	
-	@Override
-	public By getBy(String... placeholders) {		
-		return ByFactory.getBy(BY_TYPE, EXPRESSION, placeholders);
-	}
-
-	@Override
-	public Frame getFrame() {
-		return FRAME;
-	}
-
+		
 	@Override
 	public ByType getType() {
 		return BY_TYPE;

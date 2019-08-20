@@ -25,15 +25,11 @@ public class CommonWinAppActions<T extends PageElement> {
 	private static Logger log = Logger.getLogger(CommonWinAppActions.class);
 	private WindowsDriver<WebElement> driver;
 	private ConfigProvider config;
-	private Frame CURRENT_FRAME;
-
 	
 	public  CommonWinAppActions(WindowsDriver<WebElement> driver) {
 		this.driver = driver;
 		this.config = ConfigProvider.getInstance();
-		CURRENT_FRAME = Frame.DEFAULT;
-	}
-	
+	}	
 
 	/**
 	 * This method pauses the execution of mai thread, for the specified amount of time.
@@ -48,28 +44,11 @@ public class CommonWinAppActions<T extends PageElement> {
 		}
 	}
 
-	private void switchToFrame(Frame frame) {
-		if(frame.getParent() != null)
-			switchToFrame(frame.getParent());
-
-		driver.switchTo().frame(frame.getValue());
-	}
-	private void switchToFrameIfNeeded(T element) {
-		if(CURRENT_FRAME == element.getFrame())
-			return;
-		else {
-			driver.switchTo().defaultContent();
-			switchToFrame(element.getFrame());
-			CURRENT_FRAME = element.getFrame();
-		}
-	}
-
 	private WebElement getWebElement(T element, String... placeholders) {
-		switchToFrameIfNeeded(element);
 		try {
-			return driver.findElement(element.getBy(placeholders));
+			return driver.findElement(ByFactory.getBy(element.getType(), element.getExpression(), placeholders));
 		} catch(Exception e) {
-			return new WebDriverWait(driver, config.getDefaultTimeOut()).until(ExpectedConditions.elementToBeClickable(element.getBy(placeholders)));
+			return new WebDriverWait(driver, config.getDefaultTimeOut()).until(ExpectedConditions.elementToBeClickable(ByFactory.getBy(element.getType(), element.getExpression(), placeholders)));
 		}
 	}
 
@@ -81,11 +60,10 @@ public class CommonWinAppActions<T extends PageElement> {
 	 * @return
 	 */
 	public List<WebElement> getWebElements(T element, String... placeholders) {
-		switchToFrameIfNeeded(element);
 		try {
-			return driver.findElements(element.getBy(placeholders));
+			return driver.findElements(ByFactory.getBy(element.getType(), element.getExpression(), placeholders));
 		} catch(Exception e) {
-			return new WebDriverWait(driver, config.getDefaultTimeOut()).until(ExpectedConditions.presenceOfAllElementsLocatedBy(element.getBy(placeholders)));
+			return new WebDriverWait(driver, config.getDefaultTimeOut()).until(ExpectedConditions.presenceOfAllElementsLocatedBy(ByFactory.getBy(element.getType(), element.getExpression(), placeholders)));
 		}
 	} 
 
@@ -233,7 +211,7 @@ public class CommonWinAppActions<T extends PageElement> {
 		boolean flag = false;
 		driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 		try {
-			flag = driver.findElement(element.getBy(placeholders)).isDisplayed();
+			flag = getWebElement(element, placeholders).isDisplayed();
 		} catch(Exception e) {
 			flag = false;
 		}
@@ -250,7 +228,7 @@ public class CommonWinAppActions<T extends PageElement> {
 		boolean flag = false;
 		driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 		try {
-			flag = driver.findElement(element.getBy(placeholders)).isEnabled();
+			flag = getWebElement(element, placeholders).isEnabled();
 		} catch(Exception e) {
 			flag = false;
 		}
