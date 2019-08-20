@@ -42,6 +42,7 @@ public class ConfigProvider {
 	private final boolean parallelExecution;
 	private final int threadCount;
 	private final String appiumConfigFilePath;
+	private final String windowsConfigFilePath;
 	private final String dbServerName;
 	private final String remoteWebDriverConfigFilePath;
 	private String userName;
@@ -131,7 +132,8 @@ public class ConfigProvider {
 		this.dbServerName = prop.getProperty("DB_ServerName");
 		this.remoteWebDriverConfigFilePath = frameworkFolderPath + fileSeparator + "Resources" + fileSeparator 
 				+ "Configuration" + fileSeparator + "remoteDriverConfig.properties";
-		
+		this.windowsConfigFilePath = frameworkFolderPath + fileSeparator + "Resources" + fileSeparator + "Configuration"
+				+ fileSeparator + "windows.properties";
 		log.info("Environment : + this.sEnvName");
 		log.info("# Iterations : " + this.iterations);
 		log.info("Browser : " + this.browserName);
@@ -262,7 +264,10 @@ public class ConfigProvider {
 	public String getRemoteWebDriverConfigFilePath() {
 		return remoteWebDriverConfigFilePath;
 	}
-
+//windowsConfigFilePath
+	public String getWindowsConfigFilePath() {
+		return windowsConfigFilePath;
+	}
 	public String getPassword() {
 		return password;
 	}

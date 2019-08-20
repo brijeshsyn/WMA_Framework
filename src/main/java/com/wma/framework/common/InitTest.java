@@ -17,6 +17,8 @@ import com.wma.framework.testrail.APIClient;
 import com.wma.framework.testrail.APIException;
 import com.wma.framework.util.ExcelUtilities;
 
+import io.appium.java_client.windows.WindowsDriver;
+
 
 
 /**
@@ -34,6 +36,7 @@ public abstract class InitTest {
 
 	private static APIClient client;
 	private WebDriver driver;
+	private WindowsDriver winDriver;
 
 	@BeforeSuite
 	public void beforeSuite() {
@@ -158,4 +161,18 @@ public abstract class InitTest {
 		}
 		Assert.assertTrue(executeStatus);
 	}
+	
+	/**
+	 * To initialize the WindowsDriver
+	 * 
+	 * @return
+	 */
+	public WindowsDriver getWindowsDriver() {
+		if (winDriver == null || winDriver.toString().contains("null")) {
+			winDriver = WinAppDriverFactory.getWindowsDriver();
+			
+		}
+		return winDriver;
+	}
+
 }

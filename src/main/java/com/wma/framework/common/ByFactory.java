@@ -1,5 +1,7 @@
 package com.wma.framework.common;
 
+import java.io.IOException;
+
 import org.openqa.selenium.By;
 
 public class ByFactory {
@@ -36,8 +38,19 @@ public class ByFactory {
 			return By.cssSelector(value);
 		case XPATH:
 			return By.xpath(value);
+		
 		}
 		return null;
+	}
+
+	public static void main(String[] args) throws IOException, InterruptedException {
+
+		
+		//launchWinAppDriver();
+		//		verifyConsole();
+//		comboBox();
+//		tabControl();
+//		tearDown();
 	}
 }
 

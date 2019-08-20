@@ -15,27 +15,20 @@ import org.apache.log4j.Logger;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.appium.java_client.windows.WindowsDriver;
 
-public class CommonWebActions<T extends PageElement> {
-	private static Logger log = Logger.getLogger(CommonWebActions.class);
-	private WebDriver driver;
+public class CommonWinAppActions<T extends PageElement> {
+	private static Logger log = Logger.getLogger(CommonWinAppActions.class);
+	private WindowsDriver<WebElement> driver;
 	private ConfigProvider config;
 	private Frame CURRENT_FRAME;
 
-	public CommonWebActions(WebDriver driver) {
-		this.driver = driver;
-		this.config = ConfigProvider.getInstance();
-		CURRENT_FRAME = Frame.DEFAULT;
-	}
 	
-	public  CommonWebActions(WindowsDriver<WebElement> driver) {
+	public  CommonWinAppActions(WindowsDriver<WebElement> driver) {
 		this.driver = driver;
 		this.config = ConfigProvider.getInstance();
 		CURRENT_FRAME = Frame.DEFAULT;
@@ -99,6 +92,7 @@ public class CommonWebActions<T extends PageElement> {
 	/*
 	 * Scroll web page to bring the web element into visible area
 	 */
+	@SuppressWarnings("unused")
 	private void scrollToElement(WebElement element) {
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
 		waitExplicity(500);
@@ -109,6 +103,11 @@ public class CommonWebActions<T extends PageElement> {
 	 */
 	private void clickUsingJS(WebElement element) {
 		((JavascriptExecutor) driver).executeAsyncScript("arguments[0].scrollIntoView(true);", element);
+	}
+	
+	@SuppressWarnings("unused")
+	private void DirectClick (WebElement element) {
+		element.click();
 	}
 
 	/*
@@ -148,12 +147,25 @@ public class CommonWebActions<T extends PageElement> {
 	 */
 	public void click(T element, String... placeholders) {
 		try {
-			getWebElement(element, placeholders).click();
-		} catch (Exception e) {
-			scrollToElement(getWebElement(element, placeholders));
 			clickUsingJS(getWebElement(element, placeholders));
+		} catch (Exception e) {
+			
+			//scrollToElement(getWebElement(element, placeholders));
+			
 		}
 	}
+	
+	//DirectClick
+	public void clickCommand(T element, String... placeholders) {
+		try {
+			DirectClick(getWebElement(element, placeholders));
+		} catch (Exception e) {
+			
+			//scrollToElement(getWebElement(element, placeholders));
+			
+		}
+	}
+	
 
 	private void adjustCheckboxState(T element, boolean state, String... placeholders) {
 		WebElement checkbox = getWebElement(element, placeholders);
@@ -274,6 +286,12 @@ public class CommonWebActions<T extends PageElement> {
 
 		return "#" + hexColour;
 	}
+	
+//	public void maximiseWindow()
+//	{
+//		driver.manage().window().maximize();
+//
+//	}
 
 	public String getPageTitle() {
 		return driver.getTitle();
@@ -469,5 +487,7 @@ public class CommonWebActions<T extends PageElement> {
 	public void executeJavascriptExplicityly(String script) {
 		((JavascriptExecutor) driver).executeScript(script);
 	}
+	
+	
 }
 
