@@ -38,7 +38,7 @@ public class ConfigProvider {
 	private final String timeStamp;
 	private final String screenshotFolder;
 	private final Date executionStartedAt;
-	private static String frameworkFolderPath;
+	private final String frameworkFolderPath;
 	private final boolean parallelExecution;
 	private final int threadCount;
 	private final String appiumConfigFilePath;
@@ -98,7 +98,7 @@ public class ConfigProvider {
 	private ConfigProvider(Properties prop) {
 		configureLog4jAppender();
 		log.info("Initialization of configurations...");
-
+		this.frameworkFolderPath = System.getProperty("user.dir");
 		this.executionStartedAt = new Date();
 		this.product = prop.getProperty("ProductName");
 		this.appUrl = prop.getProperty("App_Url");

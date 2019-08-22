@@ -64,9 +64,9 @@ public class WebDriverFactory {
  private static WebDriver createInstance(String browserName) {
 	 WebDriver driver = null;
 	 
-	 String fileSeparator = System.getProperty("file.Separator");
+	 String fileSeparator = System.getProperty("file.separator");
 	 try {
-		 File file = new File(config.getFrameworkFolderPath() + fileSeparator + "Resources" + "Drivers");
+		 File file = new File(config.getFrameworkFolderPath() + fileSeparator + "Resources" + fileSeparator + "Drivers");
 		 
 		 DesiredCapabilities capabilities;
 		 if (browserName.toLowerCase().contains("ie")) {
@@ -227,7 +227,7 @@ public class WebDriverFactory {
 	 else
 		 System.err.println("Please provide Remote Driver's URL in the properties file");
 		 
-	 remoteURL = prop.getProperty("urlKey");
+	 remoteURL = prop.getProperty(urlKey);
 	 prop.remove(urlKey);
 	 
 	 DesiredCapabilities capabilities = new DesiredCapabilities();
@@ -238,6 +238,7 @@ public class WebDriverFactory {
 	 
 	 driver = new RemoteWebDriver(new URL(remoteURL), capabilities);
 	 driver.manage().timeouts().implicitlyWait(config.getDefaultTimeOut(), TimeUnit.SECONDS);
+	 driver.manage().window().maximize();
 	 return driver;
    }
 

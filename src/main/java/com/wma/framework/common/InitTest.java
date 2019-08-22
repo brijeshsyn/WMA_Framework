@@ -62,7 +62,6 @@ public abstract class InitTest {
 	public WebDriver getWebDriver() {
 		if (driver == null || driver.toString().contains("null")) {
 			driver = WebDriverFactory.getWebDriver();
-			driver.get(config().getAppUrl());
 		}
 		return driver;
 	}
@@ -167,12 +166,12 @@ public abstract class InitTest {
 	 * 
 	 * @return
 	 */
-	public WindowsDriver<WebElement> getWindowsDriver() {
-		if (winDriver == null || winDriver.toString().contains("null")) {
-			winDriver = WinAppDriverFactory.getWindowsDriver();
-
-		}
-		return winDriver;
-	}
+//	public WindowsDriver<WebElement> getWindowsDriver() {
+//		if (winDriver == null || winDriver.toString().contains("null")) {
+//			winDriver = WinAppDriverFactory.getWindowsDriver();
+//
+//		}
+//		return winDriver;
+//	}
 
 }

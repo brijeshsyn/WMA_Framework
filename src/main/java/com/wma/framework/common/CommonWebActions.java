@@ -112,7 +112,7 @@ public class CommonWebActions<T extends PageElement> {
 	 *   @param value
 	 *   @param placeholders
 	 */
-	public void sendkeys(T element, String value, String...placeholders) {
+	public void sendKeys(T element, String value, String...placeholders) {
 		try {
 			getWebElement(element, placeholders).sendKeys(value);
 		} catch(Exception e) {

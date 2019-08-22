@@ -379,7 +379,7 @@ public class ReportCustomiser {
 		String logoBinary = "";
 		String executionStartTime = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a").format(config.getExecutionStartedAt());
 		String html = "<div class=\"nav-wrapper\"> \r\n "+
-				"     <a href=\"http://aqrlive/Pages/Default.aspx\"class=\"brand-logo black\" target=\"_blank\">" +
+				"     <a href=\"#\"class=\"brand-logo black\" target=\"_blank\">" +
 				"      <img src=\""+logoBinary+"\" style=\"margin-left: -5px;height: 50px;width: 50px;\">" +
 				"      </a>\r\n" +
 				"<!--slideout menu --> \r\n" +
