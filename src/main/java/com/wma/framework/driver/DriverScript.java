@@ -24,6 +24,7 @@ import com.wma.framework.common.ConfigProvider;
 import com.wma.framework.common.TestCase;
 import com.wma.framework.common.TestRailTestCase;
 import com.wma.framework.report.ReportCustomiser;
+import com.wma.framework.report.TestRailAndExtentReporter;
 import com.wma.framework.util.ExcelUtilities;
 import com.wma.framework.util.TextFileUtils;
 
@@ -104,7 +105,7 @@ public class DriverScript {
 			log.info("after running testing for iteration" + i);
 
 			//Set the iteration details for the current iteration (Re-run)
-			ReportCustomiser.customise();
+			TestRailAndExtentReporter.addIterationDetails(i);
 
 			// Customize the default Extent Report
 			ReportCustomiser.customise();

@@ -213,13 +213,13 @@ public class ReportCustomiser {
 					myTable.append("<td style=\"color:red;\"><div id=\"failed_" + row.getId() + "\" style=\"cursor: pointer;\"><b>Fail</b></td>\r\n");					
 					String script = "$('#failed_" + row.getId() + "').click(function() {\r\n" +
 							"      $('a[view=\"test-view\"]').click();\r\n" +
-							"      var $scrollTo = $('#test-collection').find('li[test-id=\"" + row.getId()  +
-							"\"]';\r\n" + "      $scrollTo.click();\r\n" + "      \r\n"  +
+							"      var $scrollTo = $('#test-collection').find('li[test-id=\"" + row.getId()  + "\"]');\r\n" + 
+							"      $scrollTo.click();\r\n" + "      \r\n"  +
 							"      var $container = $('div[class=\"subview-left left\"]');\r\n" +
 							"      $container.animate({\r\n" +
 							"      scrollTop: $scrollTo.offset().top - $container.offset().top + $container.scrollTop()\r\n" +
 							"      });\r\n" + "      \r\n" +
-							"      var $container1 = $('div[class=\"subview-righht left\"]',\r\n" +
+							"      var $container1 = $('div[class=\"subview-righht left\"]'),\r\n" +
 							"          $scrollTo1 = $('div[class=\"subview-right left\"]').find('tr[status=\"fail\"]');\r\n" +
 							"      $container1.animate({\r\n" +
 							"       scrollTop: $scrollTo1.offset().top - $container1.offset().top + $container1.scrollTop()\r\n" +
@@ -354,9 +354,10 @@ public class ReportCustomiser {
 			iterationTable.append("<tr><td><div id=\"iteration_" + i + "\" style=\"cursor: pointer;\"><a>Iteration " + i
 					+ "</a></div></td></tr>\n");
 			String script = "$('#iteration_" + i + "').click(function() {\r\n"
-					+ "            $('#iterationTestCases').children().each(function()) {\r\n"
-					+ "	             $(this).addClass('hide');\r\n" + "            ));\r\n"
-					+ "            $('#testCasesForIteration" + i + "').removeClass('hide');\r\n" + "     });";
+					+ "            $('#iterationTestCases').children().each(function() {\r\n"
+					+ "	             $(this).addClass('hide');\r\n" + "            });\r\n"
+					+ "            $('#testCasesForIteration" + i + "').removeClass('hide');\r\n" 
+					+ "     });";
 			addJavaScript(script);
 		}
 		iterationTable.append("</table></div>");
@@ -385,7 +386,7 @@ public class ReportCustomiser {
 				"<!--slideout menu --> \r\n" +
 				"<ul id=\"slide-out\" class=\"side-nav fixed hide-on-med-and-down\"> \r\n" +
 				" <li class=\"wave-effect active\"><a href=\"#!\"onclick=\"configureView(-1);chartsView('dashboard');\" view=\"dashboard-view\"><i class=\"material-icons\">track_changes</i></a></li> \r\n" +
-				" <li class=\"waves-effect\"><a href=\"#!\" view=\"test-view\" onclick=\"configureView(0);chartsView('test');><i class=\"material-icons\">dashboard</i></a></li>\r\n" +
+				" <li class=\"waves-effect\"><a href=\"#!\" view=\"test-view\" onclick=\"configureView(0);chartsView('test');\"><i class=\"material-icons\">dashboard</i></a></li>\r\n" +
 				"</ul> \r\n" +
 				"<!-- report name --> \r\n" +
 				"    <span class=\"report-name\" style=\"font-size: 20px;position: absolute;\"><b>" + config.getProduct() + " Automation Execution Report</b></span>\r\n" +

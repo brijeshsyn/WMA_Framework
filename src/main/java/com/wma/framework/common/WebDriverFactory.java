@@ -69,8 +69,8 @@ public class WebDriverFactory {
 		 
 		 DesiredCapabilities capabilities;
 		 if (browserName.toLowerCase().contains("ie")) {
-			 System.setProperty("Webdriver.ie.driver", file.getCanonicalPath() + fileSeparator
-					 + "IEDriverServer_Win32_3.1.0" + fileSeparator + "IEDriverServer.exe");
+			 System.setProperty("webdriver.ie.driver", file.getCanonicalPath() + fileSeparator
+					 + "ie_driver" + fileSeparator + "IEDriverServer.exe");
 			InternetExplorerOptions ieOptions = new InternetExplorerOptions();
 			ieOptions.setCapability(InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS, true);
 			ieOptions.setCapability(InternetExplorerDriver.IE_ENSURE_CLEAN_SESSION, true);

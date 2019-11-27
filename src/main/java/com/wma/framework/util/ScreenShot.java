@@ -40,7 +40,7 @@ public class ScreenShot {
 			myFile.mkdirs();
 		String currentDateTime = getCurrentDate();
 		String location = ConfigProvider.getInstance().getScreenshotFolder() + System.getProperty("file.separator") 
-		+ strAction.replaceAll("[^a-zA-ZQ-9]", "") + "_" + currentDateTime + ".png";
+		+ strAction.replaceAll("[^a-zA-Z0-9]", "") + "_" + currentDateTime + ".png";
 		log.info("Screenshot : " + location);
 		try {
 			File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
