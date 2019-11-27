@@ -38,6 +38,9 @@ public class ByFactory {
 			return By.cssSelector(value);
 		case XPATH:
 			return By.xpath(value);
+		case ACCESSIBILITY_ID:
+			System.err.println("Use windows driver");
+			return null;
 		
 		}
 		return null;

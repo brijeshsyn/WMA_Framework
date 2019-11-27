@@ -49,7 +49,6 @@ public class WebDriverFactory {
 	private WebDriverFactory() {
 	}
 	
-	private static WebDriver driver = null;
 	private static WebDriver chromeDriver = null;
 	private static ConfigProvider config = ConfigProvider.getInstance();
 	
@@ -154,14 +153,8 @@ public class WebDriverFactory {
  * @return
  */
  public static WebDriver getWebDriver() {
-	 if (driver == null) {
-		 driver = createInstance(config.getBrowserName());
-		 webDriver.set(driver);
-	 } else if (webDriver.get().toString().contains("null")) {
-		 driver = createInstance(config.getBrowserName());
-		 webDriver.remove();
-		 webDriver.set(driver);
-	 }
+	 if(webDriver.get() == null)
+		 webDriver.set(createInstance(config.getBrowserName()));
 	 return webDriver.get();
  }
  
@@ -179,10 +172,11 @@ public class WebDriverFactory {
 /**
  * Quite default web driver instance
  */
- public static void quitWebDriver() {
-	 if (driver != null)
-		 driver.quit();
-	 driver = null;
+ public synchronized static void quitWebDriver() {
+	 if (webDriver.get() != null) {
+		webDriver.get().quit();
+		webDriver.remove();
+	 }
   }
   
 /**
@@ -194,18 +188,7 @@ public class WebDriverFactory {
 		 chromeDriver = null;
 	 }
   }
-/**
- * Quit all open instances of web driver, including the explicit instances 
- */
- public static void quitAllInstancesOfWebDriver() {
-	 quitWebDriver();
-	 quitExplicitInstanceOfChromeDriver();
-	 
-	 if (!webDriver.get().toString().contains("null")) {
-		 webDriver.get().quit();
-		 webDriver.remove();
-	 } 
-  }
+ 
  
 /**
  * Create an instance of remote web driver 
