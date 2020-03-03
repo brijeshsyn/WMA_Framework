@@ -134,7 +134,7 @@ public class ConfigProvider {
 				+ "Configuration" + fileSeparator + "remoteDriverConfig.properties";
 		this.windowsConfigFilePath = frameworkFolderPath + fileSeparator + "Resources" + fileSeparator + "Configuration"
 				+ fileSeparator + "windows.properties";
-		log.info("Environment : + this.sEnvName");
+		log.info("Environment : " + this.envName);
 		log.info("# Iterations : " + this.iterations);
 		log.info("Browser : " + this.browserName);
 		log.info("Parallel Execution " + parallelExecution);
