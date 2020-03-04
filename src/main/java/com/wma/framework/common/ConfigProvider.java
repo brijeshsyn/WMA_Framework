@@ -45,8 +45,8 @@ public class ConfigProvider {
 	private final String windowsConfigFilePath;
 	private final String dbServerName;
 	private final String remoteWebDriverConfigFilePath;
-	private String userName;
-	private String password;
+	private String userName = "";
+	private String password = "";
 
 	private static String rootDir = System.getProperty("user.dir");
 	private static String fileSeparator = System.getProperty("file.separator");	
@@ -79,22 +79,39 @@ public class ConfigProvider {
 					System.exit(1);
 				}
 
+				//Read the wmaConfig.properties file and load the values in the ConfigProvider object
 				Properties prop = new Properties();
 				prop.load(new FileInputStream(new File(testControllerFile)));
 				config = new ConfigProvider(prop);
+				
+				//Check whether required properties file exist or not
+				String temp = config.checkRequiredFilesExist();
+				if(temp.length() > 1) {
+					Thread.sleep(1000);
+					throw new Exception(temp);
+				}
+				
+				//load the user details if userDetails sheet exists in the test data file
 				config.setUserPassword(config.getTestDataFilePath());
+				
 				log.info("Configured Username : " + config.getUserName());
 			} catch(NullPointerException e) {
 				log.error("Execution is being stopped...");
 				System.exit(1);
 			} catch(IOException e) {
 				log.error(e);
+			} catch(Exception e) {
+				if(e.getMessage().contains("file doesn't exist")) {
+					System.err.println(e.getMessage());
+					System.exit(1);
+				}
 			}
 			return config;
 		}
 		return config;
 	}
 
+	//Constructor to initialize object
 	private ConfigProvider(Properties prop) {
 		configureLog4jAppender();
 		log.info("Initialization of configurations...");
@@ -137,12 +154,18 @@ public class ConfigProvider {
 		log.info("Environment : " + this.envName);
 		log.info("# Iterations : " + this.iterations);
 		log.info("Browser : " + this.browserName);
-		log.info("Parallel Execution " + parallelExecution);
+		log.info("Parallel Execution " + this.parallelExecution);
+		log.info("TestData File : " + this.testDataFile);
 		if (parallelExecution)
 			log.info("Thread Count : " + threadCount);
 		log.info("TestRail : " + testRail);
 		
 	}
+	
+	/*
+	 * To set the values for user name and password which can be further used in the respective application wherever required.
+	 * @param filePath
+	 */
 	private void setUserPassword(String filePath) {
 		ExcelUtilities excel = new ExcelUtilities(filePath);
 		if(excel.isSheetPresent(USER_DETAILS_SHEET_NAME)) {
@@ -177,6 +200,33 @@ public class ConfigProvider {
 		}
 	}
 
+	/*
+	 * Verify whether the required properties files exist or not
+	 */
+	private String checkRequiredFilesExist() {
+		String msg = "";
+		if(getBrowserName().toLowerCase().contains("mobile")) {
+			File f = new File(getAppiumConfigFilePath());
+			if(!f.exists())
+				msg = "Browser name is set to 'mobile', however 'appium.properties' file doesn't exist";
+		}
+		else if(getBrowserName().toLowerCase().contains("remote")) {
+			File f = new File(getRemoteWebDriverConfigFilePath());
+			if(!f.exists())
+				msg = "Browser name is set to 'remote', however 'remoteDriverConfig.properties' file doesn't exist";
+		}
+		else if(getBrowserName().toLowerCase().contains("windows")) {
+			File f = new File(getWindowsConfigFilePath());
+			if(!f.exists())
+				msg = "Browser name is set to 'windows', however 'windows.properties' file doesn't exist";
+		}
+		else
+			msg = "";		
+		
+		return msg;
+	}
+	
+	
 	public static String getUserDetailsSheetName() {
 		return USER_DETAILS_SHEET_NAME;
 	}

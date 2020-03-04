@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -307,10 +306,8 @@ public class ExcelUtilities {
 			FileInputStream excelFile = new FileInputStream(new File(filePath));
 			workbook = new XSSFWorkbook(excelFile);
 			int sheetCount = workbook.getNumberOfSheets();
-			for(int i=0; i<sheetCount; i++) {
+			if(sheetCount > 1)
 				flag = true;
-				break;
-			}
 		}
 		catch(Exception e ) {
 			log.error(e.getLocalizedMessage());
