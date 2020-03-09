@@ -1,5 +1,8 @@
 package com.wma.framework.common;
 
+/**
+ * Constants representing each locator type supported by selenium
+ */
 public enum ByType {
 	ID,
 	NAME,

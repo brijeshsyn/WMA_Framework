@@ -7,7 +7,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -17,8 +16,6 @@ import com.wma.framework.report.TestRailAndExtentReporter;
 import com.wma.framework.testrail.APIClient;
 import com.wma.framework.testrail.APIException;
 import com.wma.framework.util.ExcelUtilities;
-
-import io.appium.java_client.windows.WindowsDriver;
 
 /**
  * InitTest class is, the class which should be inherited/extended by each Test
@@ -35,8 +32,7 @@ public abstract class InitTest {
 
 	private static APIClient client;
 	private WebDriver driver;
-	private WindowsDriver<WebElement> winDriver;
-
+	
 	@BeforeSuite
 	public void beforeSuite() {
 		log.info("Inside BeforeSuite Method");
@@ -139,12 +135,12 @@ public abstract class InitTest {
 			data.put("status_id", new Integer(5));
 			tcLogger.log(Status.FAIL, strTestCaseTitle + "Test case is FAILED");
 			log.error("Test Case Failed");
-			// updateTestStatus(strTestCaseTitle, "Fail");
+			updateTestStatus(strTestCaseTitle, "Fail");
 		} else {
 			data.put("status_id", new Integer(1));
 			tcLogger.log(Status.PASS, strTestCaseTitle + " Test CAse is PASSED");
 			log.info("Test Case Passed");
-			// updateTestStatus(strTestCaseTitle, "Pass");
+			updateTestStatus(strTestCaseTitle, "Pass");
 		}
 
 		if (config().getTestRail().equalsIgnoreCase("Yes")) {
@@ -159,6 +155,11 @@ public abstract class InitTest {
 			}
 		}
 		Assert.assertTrue(executeStatus);
+	}
+
+	private void updateTestStatus(String strTestCaseTitle, String string) {
+		// TODO Auto-generated method stub
+		System.err.println("Update Test Status method is not created yet");
 	}
 
 	/**

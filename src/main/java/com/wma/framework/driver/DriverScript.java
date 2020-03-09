@@ -186,16 +186,25 @@ public class DriverScript {
 	private List<TestCase> readTestCases(ConfigProvider config) {
 		log.info("Reading test cases from Excel...");
 		String fileSeparator = System.getProperty("file.separator");
+		//Object to store test cases
 		List<TestCase> testCases = new ArrayList<>();
+		
+		//create a unique name for test data file by adding time stamp to it
 		String testDataFile = config.getTestDataFile().split(Pattern.quote("."))[0];
 		String testFile = config.getResultFolder() + fileSeparator + testDataFile + "_" + config.getTimeStamp() + ".xlsx";
+		
+		//Read test cases from Excel
 		ExcelUtilities excel = new ExcelUtilities(testFile);
 		int totalTcCount = excel.getRowCount(config.getProduct());
+		
+		//Add the test cases to the object testCases
 		for(int i=1; i<totalTcCount; i++) {
 			Map<String, String> tc = excel.getRowData(i, config.getProduct());
 			if(tc.isEmpty())
 				continue;
 
+			//Create object of class TestCase, initialize it and add it to the list object testCases
+			//Read test cases which are set to Pass in the Status field
 			if(tc.get("Execute").equalsIgnoreCase("Yes") && !(tc.get("Status").equalsIgnoreCase("Pass"))) {
 				TestCase testCase = new TestCase();
 				testCase.setEnabled(tc.get("Enabled"))
@@ -207,6 +216,7 @@ public class DriverScript {
 			}
 		}
 
+		//return the list of test cases read from the excel
 		return testCases;
 	}
 

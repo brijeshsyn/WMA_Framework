@@ -58,6 +58,7 @@ public class CommonWebActions<T extends PageElement> {
 			else
 				return driver.findElement(ByFactory.getBy(element.getType(), element.getExpression(), placeholders));
 		} catch(Exception e) {
+			//in some cases above code may not work, therefore trying alternate method to locate the element
 			if(element.getType() != ByType.ACCESSIBILITY_ID)
 				return new WebDriverWait(driver, config.getDefaultTimeOut()).until(ExpectedConditions.elementToBeClickable(ByFactory.getBy(element.getType(), element.getExpression(), placeholders)));
 			else {

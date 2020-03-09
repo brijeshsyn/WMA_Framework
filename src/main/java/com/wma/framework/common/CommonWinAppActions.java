@@ -83,8 +83,7 @@ public class CommonWinAppActions<T extends PageElement> {
 		((JavascriptExecutor) driver).executeAsyncScript("arguments[0].scrollIntoView(true);", element);
 	}
 	
-	@SuppressWarnings("unused")
-	private void DirectClick (WebElement element) {
+	private void directClick (WebElement element) {
 		element.click();
 	}
 
@@ -127,7 +126,7 @@ public class CommonWinAppActions<T extends PageElement> {
 		try {
 			clickUsingJS(getWebElement(element, placeholders));
 		} catch (Exception e) {
-			
+			//Since Javascripts are not applicable to desktop applications, below code is invalid
 			//scrollToElement(getWebElement(element, placeholders));
 			
 		}
@@ -136,9 +135,9 @@ public class CommonWinAppActions<T extends PageElement> {
 	//DirectClick
 	public void clickCommand(T element, String... placeholders) {
 		try {
-			DirectClick(getWebElement(element, placeholders));
+			directClick(getWebElement(element, placeholders));
 		} catch (Exception e) {
-			
+			//Since Javascripts are not applicable to desktop applications, below code is invalid
 			//scrollToElement(getWebElement(element, placeholders));
 			
 		}
@@ -263,20 +262,6 @@ public class CommonWinAppActions<T extends PageElement> {
 			hexColour = "000000".substring(0, 6 - hexColour.length()) + hexColour;
 
 		return "#" + hexColour;
-	}
-	
-//	public void maximiseWindow()
-//	{
-//		driver.manage().window().maximize();
-//
-//	}
-
-	public String getPageTitle() {
-		return driver.getTitle();
-	}
-
-	public String getPageURL() {
-		return driver.getCurrentUrl();
 	}
 
 	public String getText(T element, String...placeholders) {
