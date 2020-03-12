@@ -119,7 +119,7 @@ public abstract class InitTest {
 
 	/**
 	 * This is used to update the final status of the test case. It is meant to be
-	 * used in finally block of every testscript
+	 * used in finally block of every test script
 	 * 
 	 * @param runId
 	 * @param caseId
@@ -129,6 +129,27 @@ public abstract class InitTest {
 	 */
 	public void finallyMethod(String strTestCaseTitle, String runId, String caseId, Boolean executeStatus,
 			TestRailAndExtentReporter tcLogger) {
+		finallyMethod(strTestCaseTitle, executeStatus, tcLogger);		
+		
+		if (config().getTestRail().equalsIgnoreCase("Yes")) {
+			Map<String, Object> data = new HashMap<String, Object>();
+			if (!executeStatus)
+				data.put("status_id", new Integer(5));
+			else
+				data.put("status_id", new Integer(1));
+			
+			data.put("comment", tcLogger.getTestRailComments());
+			try {
+				log.info("Updating log in Test Rail");
+				JSONObject r = (JSONObject) client.sendPost("add_result_for_case/" + runId + "/" + caseId, data);
+				log.info("Logs updated in Test Rail \n" + r);
+			} catch (IOException | APIException e) {
+				log.error("Input/Output Exception...");
+				e.printStackTrace();
+			}
+		}
+	}
+	public void finallyMethod(String strTestCaseTitle, Boolean executeStatus, TestRailAndExtentReporter tcLogger) {
 		log.info("Executing Finally Method");
 		Map<String, Object> data = new HashMap<String, Object>();
 		if (!executeStatus) {
@@ -142,24 +163,13 @@ public abstract class InitTest {
 			log.info("Test Case Passed");
 			updateTestStatus(strTestCaseTitle, "Pass");
 		}
-
-		if (config().getTestRail().equalsIgnoreCase("Yes")) {
-			data.put("comment", tcLogger.getTestRailComments());
-			try {
-				log.info("Updating log in Test Rail");
-				JSONObject r = (JSONObject) client.sendPost("add_result_for_case/" + runId + "/" + caseId, data);
-				log.info("Logs updated in Test Rail \n" + r);
-			} catch (IOException | APIException e) {
-				log.error("Input/Output Exception...");
-				e.printStackTrace();
-			}
-		}
 		Assert.assertTrue(executeStatus);
 	}
 
-	private void updateTestStatus(String strTestCaseTitle, String string) {
-		// TODO Auto-generated method stub
-		System.err.println("Update Test Status method is not created yet");
+	private void updateTestStatus(String strTestCaseTitle, String status) {
+		ExcelUtilities excel = new ExcelUtilities(config().getTestDataFilePath());
+		String whereCondition = "TestCaseTitle=" + strTestCaseTitle;
+		excel.updateValue(config().getProduct(), "Status", status, whereCondition);
 	}
 
 	/**

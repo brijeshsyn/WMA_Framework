@@ -250,12 +250,12 @@ public class ExcelUtilities {
 
 		int rows = getRowCount(sheetName);
 
-		//Check whether there are rows are not, if there is only one row, it is assumed to be header row having column names
+		//Check whether there are rows or not, if there is only one row, it is assumed to be header row having column names
 		if(rows <=1)
 			return records;
 
 		for(int r=1; r<rows; r++)
-			records.add(r, getRowData(r, sheetName).get(colName));
+			records.add(r-1, getRowData(r, sheetName).get(colName));
 
 		return records;
 	}
@@ -321,6 +321,78 @@ public class ExcelUtilities {
 			}
 		}
 		return flag;
+	}
+	
+	/**
+	 * Update value in specific cell of the given excel file and sheet name
+	 * <br/><b>Note: Only one where condition (colName=value) is supported</b>
+	 * @param sheetName
+	 * @param colName
+	 * @param value
+	 * @param whereCondition
+	 */
+	public void updateValue(String sheetName, String colName, String value, String whereCondition) {
+		//Fetch the column index for the given colName which is to be updated
+		List<String> cols = getFieldNames(sheetName);
+		int indexOfFieldToBeUpdated = cols.indexOf(colName);
+		
+		//Split the condition to find the specific values to be searched in the excel
+		String[] condition = whereCondition.split("=");
+		String fieldName = condition[0].trim();
+		String conditionValue = condition[1].trim().replace("'", "");
+		
+		//Fetch data for the given column in the condition
+		List<String> valuesForCols = getValuesForColumn(sheetName, fieldName);
+		//Fetch the index for the specified value in the column
+		int rowIndex = valuesForCols.indexOf(conditionValue);
+		
+		Workbook workbook = null;
+		FileOutputStream fo = null;
+		try {
+			//Read the excel file
+			FileInputStream excelFile = new FileInputStream(new File(filePath));
+			workbook = new XSSFWorkbook(excelFile);
+			Sheet sheet = workbook.getSheet(sheetName);
+			//Get the cell reference for the row and col
+			Cell cellToBeUpdated = sheet.getRow(rowIndex+1).getCell(indexOfFieldToBeUpdated);
+			//Update the value of the cell
+			cellToBeUpdated.setCellValue(value);
+
+			//Get the output stream of the file
+			fo = new FileOutputStream(new File(filePath));
+			//Write changes back to the excel file
+			workbook.write(fo);
+			
+		} catch (Exception e) {
+
+		} finally {
+			if (workbook != null) {
+				try {
+					workbook.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (fo != null) {
+				try {
+					fo.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+	
+	
+	public static void main(String[] args) {
+		System.out.println("Started...");
+		String file = "C:\\Users\\Chitte.Amol\\git\\Project2\\Project1\\Resources\\TestData\\Project1TestData.xlsx";
+		ExcelUtilities excel = new ExcelUtilities(file);
+		String whereCondition = "TestCaseTitle=Web Based application test";
+		System.out.println("Updating value");
+		excel.updateValue("Project1", "Status", "FAILED", whereCondition);
+		System.out.println("Done");
 	}
 
 }
