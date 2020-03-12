@@ -95,7 +95,6 @@ public class WebDriverFactory {
 		    
 		 } else if (browserName.toLowerCase().contains("remote")) {
 			 driver = getRemoteWebDriver();
-			 return driver;
 			 
 		 } else if (browserName.toLowerCase().contains("safari")) {
 			 driver = new SafariDriver();
@@ -128,7 +127,6 @@ public class WebDriverFactory {
 			 capabilities.setCapability("chromedriverExecutable", driverLocation);
 			 System.out.println("Mobile Configurations as follows :\n" + capabilities.toJson());
 			 driver = new RemoteWebDriver(new URL(appiumUrl), capabilities);
-			 return driver;
 		 }
 	 } catch (Exception e) {
 		 e.printStackTrace();
@@ -138,8 +136,10 @@ public class WebDriverFactory {
 	 driver.manage().timeouts().implicitlyWait(config.getDefaultTimeOut(), TimeUnit.SECONDS);
 	 
 	 // maximize the browser window when it's not mobile 
-	 if (!(browserName.toLowerCase().contains("mobile") || browserName.toLowerCase().contains("remote")))
+	 if (!(browserName.toLowerCase().contains("mobile") || browserName.toLowerCase().contains("remote"))) {
 		 driver.manage().window().maximize();
+		 driver.get(config.getAppUrl());
+	 }
 	 
 	 return driver;
   }
