@@ -39,8 +39,6 @@ import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 /**
  * This class helps to connect to the outlook application and read emails
  *
- * @author singhb
- *
  */
 public class OutlookUtility {
 	private static Logger log = Logger.getLogger(OutlookUtility.class);
@@ -48,7 +46,7 @@ public class OutlookUtility {
 	private String folder;
 	private ExchangeService service;
 	private static Integer NUMBER_EMAILS_FETCH = 20;
-	private final String webmailURI = "https://webmail.aqrcapital.com/ews/Exchange.asmx";
+	private final String webmailURI = "https://<webmailURL>/ews/Exchange.asmx";
 
 	/**
 	 * Constructor to initialize the object to access email contents
@@ -61,7 +59,7 @@ public class OutlookUtility {
 			service = new ExchangeService(ExchangeVersion.Exchange2010_SP1);
 			service.setUrl(new URI(webmailURI));
 
-			ExchangeCredentials credentials = new WebCredentials(userName, password, "aqr.com");
+			ExchangeCredentials credentials = new WebCredentials(userName, password, "<DomainName");
 			service.setCredentials(credentials);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -69,8 +67,8 @@ public class OutlookUtility {
 	}
 
 	/**
-	 * Set hte folder from which you need to read emails 
-	 * @param folderPath Folder path should be like <b>Inbox\foldeer\folder1_1</b>
+	 * Set the folder from which you need to read emails 
+	 * @param folderPath Folder path should be like <b>Inbox\folder\folder1_1</b>
 	 */
 	public void setFolder(String folderName) {
 		this.folder = folderName;

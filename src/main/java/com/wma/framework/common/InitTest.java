@@ -167,7 +167,7 @@ public abstract class InitTest {
 	}
 
 	private void updateTestStatus(String strTestCaseTitle, String status) {
-		ExcelUtilities excel = new ExcelUtilities(config().getTestDataFilePath());
+		ExcelUtilities excel = new ExcelUtilities(config().getResultTestDataFilePath());
 		String whereCondition = "TestCaseTitle=" + strTestCaseTitle;
 		excel.updateValue(config().getProduct(), "Status", status, whereCondition);
 	}
