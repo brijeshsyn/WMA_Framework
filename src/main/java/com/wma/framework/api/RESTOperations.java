@@ -27,21 +27,26 @@ import io.restassured.specification.RequestSpecification;
  */
 public class RESTOperations {
 	private RequestSpecification req;
-	private URI resource;
-	private static AuthMode AUTH_MODE = AuthMode.NTLM;
+	public static AuthMode AUTH_MODE = null;
 	
-	public RESTOperations(String endPOint) {
+	public RESTOperations(String endPoint) {
 		ConfigProvider config = ConfigProvider.getInstance();
 		
-		RestAssured.baseURI = config.getAppUrl();
-		if(AUTH_MODE.equals(NTLM))
+		if(null == endPoint)
+			RestAssured.baseURI = config.getAppUrl();
+		else
+			RestAssured.baseURI = endPoint;
+		
+		if(null == AUTH_MODE)
+				req = given();
+		else if(AUTH_MODE.equals(NTLM))
 			req = given().auth().basic(config.getUserName(), config.getPassword());
 		else if(AUTH_MODE.equals(SSL) || AUTH_MODE.equals(BASIC))
 			req = given().auth().basic(config.getUserName(), config.getPassword());
 	}
 	
 	//To handle HTTP GEt requests
-	public Response get(String response) {
+	public Response get(String resource) {
 		return req.get(resource);
 	}
     //To handle HTTP POST requests
